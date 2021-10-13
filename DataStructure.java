@@ -3,6 +3,12 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+
+// use fold to apply darw method to a list of objects
+// Using lambda in java:
+// - Can use it when you have an interface that has only one method 
+// - 
+
 interface IList<T> {
   // compute the length of this list
   int length();
