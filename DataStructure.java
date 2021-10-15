@@ -115,9 +115,23 @@ class andMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   }
 }
 
-class orMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
+class orMapHelp implements fBiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
     return current || acc;
+  }
+}
+
+class convertInvaderToImage implements Function<IList<InvaderColumn>, WorldImage> {
+
+  public WorldImage apply(IList<InvaderColumn> t) {
+    return t.invaders;
+  }
+}
+
+class convertInvaderColumnsToImage implements Function<IList<InvaderColumn>, WorldImage> {
+
+  public WorldImage apply(IList<InvaderColumn> t) {
+    return t.first;
   }
 }
 
@@ -185,21 +199,20 @@ class Invader extends AGamePiece {
   }
 
   public WorldImage draw() {
-    return new RectangleImage(size*2, size, OutlineMode.OUTLINE, super.color);;
+    return new RectangleImage(size*2, size, OutlineMode.OUTLINE, super.color);
   }
 }
 
 class InvaderColumn {
   // look at adding an int here to track the stack of invader rows 
-  int rank; 
+  int column; 
   IList<Invader> invaders;
 
   InvaderColumn(IList<Invader> invaders, int rank) {
     this.invaders = invaders;
-    this.rank = rank; 
+    this.column = rank; 
   }
 }
-
 
 interface IBullet {
   static int BULLET_SPEED = 5; // change later -----------
@@ -257,11 +270,6 @@ class SpaceshipBullets {
  *  
  *  InvaderColumnmap(draw)
  */
-
-
-
-
-
 
 class ExamplesSpaceInvaders {
   ExamplesSpaceInvaders() {
