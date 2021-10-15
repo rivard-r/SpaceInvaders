@@ -2,9 +2,22 @@ import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.*;
+import tester.*;
+import javalib.worldcanvas.*;
+import javalib.worldimages.*;
+import java.awt.Color;
+import javalib.funworld.*; 
+
+
+// use fold to apply darw method to a list of objects
+// Using lambda in java:
+// - Can use it when you have an interface that has only one method 
+// - 
 
 interface IList<T> {
-  // compute the length of this list
+
+  // returns the length of this list
   int length();
 
   // filter this list using the given predicate
@@ -19,18 +32,13 @@ interface IList<T> {
 
   // combine the items in this list from right to left
   <U> U fold(BiFunction<T, U, U> converter, U initial);
-
-
 }
 
 class MtList<T> implements IList<T> {
 
-  MtList() {
-  }
-
   // filter this list using the given predicate
   public IList<T> filter(Predicate<T> pred) {
-    return new MtList<T>();
+    return this;
   }
 
   // map a function onto every member of this list
@@ -48,15 +56,12 @@ class MtList<T> implements IList<T> {
     return 0;
   }
 
-  // zip this list and the given list together using the given function
-  public <U, R> IList<R> zip(IList<U> otherList, BiFunction<T, U, R> combiner) {
-    return new MtList<R>();
+  public boolean andMap(Predicate<T> pred) {
+    return true;
   }
 
-  // zip this list and given list together. Passes in the first and rest of the
-  // list to zip
-  public <U, R> IList<R> zipHelp(IList<U> otherList, U value, BiFunction<U, T, R> combiner) {
-    return new MtList<R>();
+  public boolean orMap(Predicate<T> pred) {
+    return false;
   }
 
 }
@@ -94,15 +99,25 @@ class ConsList<T> implements IList<T> {
     return 1 + this.rest.length();
   }
 
-  // zip this list and the given list together using the given function
-  public <U, R> IList<R> zip(IList<U> otherList, BiFunction<T, U, R> combiner) {
-    return otherList.zipHelp(this.rest, this.first, combiner);
+  public boolean andMap(Predicate<T> pred) {
+    return this.map((s)->pred.test(s)).fold(new andMapHelp(), true);
   }
 
-  // zip this list and given list together. Passes in the first and rest of the
-  // list to zip
-  public <U, R> IList<R> zipHelp(IList<U> otherRest, U value, BiFunction<U, T, R> combiner) {
-    return new ConsList<R>(combiner.apply(value, this.first), otherRest.zip(this.rest, combiner));
+  public boolean orMap(Predicate<T> pred) {
+    return this.map((s)->pred.test(s)).fold(new orMapHelp(), false);
+  }
+
+}
+
+class andMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
+  public Boolean apply(Boolean current, Boolean acc) {
+    return current && acc;
+  }
+}
+
+class orMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
+  public Boolean apply(Boolean current, Boolean acc) {
+    return current || acc;
   }
 }
 
@@ -127,10 +142,10 @@ interface IGamePiece {
 
 abstract class AGamePiece implements IGamePiece {
 	CartPt loc;
-	String color;
+	Color color;
   int size;
 
-	AGamePiece(CartPt loc, String color, int size) {
+	AGamePiece(CartPt loc, Color color, int size) {
 		this.loc = loc;
 		this.color = color;
     this.size = size;
@@ -138,22 +153,47 @@ abstract class AGamePiece implements IGamePiece {
 }
 
 class Spaceship extends AGamePiece {
-  int SPACESHIP_Y = 10; // change later, trying to set permanent Y
-  int SPACESHIP_SPEED = 20; // change later, arbritrary number
+  static int SPACESHIP_Y = 10; // change later, trying to set permanent Y
+  static int SPACESHIP_SPEED = 20; // change later, arbritrary number
+  int speed;
 
-  Spaceship(int xpos, String color, int size int speed){
+  Spaceship(int xpos, Color color, int size, int speed){
     super(new CartPt(xpos, SPACESHIP_Y), color, size);
     this.speed = SPACESHIP_SPEED;
+  }
+
+  @Override
+  public IGamePiece move(int dx, int dy) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
 
 class Invader extends AGamePiece {
 
-  static String DEFAULT_COLOR = "Purple";
+  static Color DEFAULT_COLOR = Color.MAGENTA;
   static int DEFAULT_SIZE = 5; // change later, arbitrary number
 
   Invader(CartPt loc) {
     super(loc, DEFAULT_COLOR, DEFAULT_SIZE);
+  }
+
+  @Override
+  public IGamePiece move(int dx, int dy) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public WorldImage draw() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
 
