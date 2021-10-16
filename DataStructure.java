@@ -7,8 +7,7 @@ import tester.*;
 import javalib.worldcanvas.*;
 import javalib.worldimages.*;
 import java.awt.Color;
-import javalib.funworld.*; 
-
+import javalib.funworld.*;
 
 // use fold to apply darw method to a list of objects
 // Using lambda in java:
@@ -100,11 +99,11 @@ class ConsList<T> implements IList<T> {
   }
 
   public boolean andMap(Predicate<T> pred) {
-    return this.map((s)->pred.test(s)).fold(new andMapHelp(), true);
+    return this.map((s) -> pred.test(s)).fold(new andMapHelp(), true);
   }
 
   public boolean orMap(Predicate<T> pred) {
-    return this.map((s)->pred.test(s)).fold(new orMapHelp(), false);
+    return this.map((s) -> pred.test(s)).fold(new orMapHelp(), false);
   }
 
 }
@@ -115,26 +114,33 @@ class andMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   }
 }
 
-class orMapHelp implements fBiFunction<Boolean, Boolean, Boolean> {
+class orMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
     return current || acc;
   }
 }
 
-class convertInvaderToImage implements Function<IList<InvaderColumn>, WorldImage> {
+// possibly obsolete
+class convertInvaderColumnsToImage implements Function<IList<IList<Invader>>, IList<IList<WorldImage>>> {
 
-  public WorldImage apply(IList<InvaderColumn> t) {
-    return t.invaders;
+  public IList<IList<WorldImage>> apply(IList<IList<Invader>> t) {
+    return t.map(new InvaderListToImageList());
   }
 }
 
-class convertInvaderColumnsToImage implements Function<IList<InvaderColumn>, WorldImage> {
+class InvaderListToImageList implements Function<IList<Invader>, IList<WorldImage>> {
 
-  public WorldImage apply(IList<InvaderColumn> t) {
-    return t.first;
+  public IList<WorldImage> apply(IList<Invader> t) {
+    return t.map(new InvaderToImage());
   }
 }
 
+class InvaderToImage implements Function<Invader, WorldImage> {
+
+  public WorldImage apply(Invader t) {
+    return t.draw();
+  }
+}
 
 class CartPt {
   int x;
@@ -148,22 +154,23 @@ class CartPt {
 
 interface IGamePiece {
 
-	//move this IGamePiece by the given x and y
-	IGamePiece move(int dx, int dy);
-	//draw this IGamePiece
-	WorldImage draw();
+  //move this IGamePiece by the given x and y
+  IGamePiece move(int dx, int dy);
+
+  //draw this IGamePiece
+  WorldImage draw();
 }
 
 abstract class AGamePiece implements IGamePiece {
-	CartPt loc;
-	Color color;
+  CartPt loc;
+  Color color;
   int size;
 
-	AGamePiece(CartPt loc, Color color, int size) {
-		this.loc = loc;
-		this.color = color;
+  AGamePiece(CartPt loc, Color color, int size) {
+    this.loc = loc;
+    this.color = color;
     this.size = size;
-	}
+  }
 }
 
 class Spaceship extends AGamePiece {
@@ -171,55 +178,66 @@ class Spaceship extends AGamePiece {
   static int SPACESHIP_SPEED = 20; // change later, arbritrary number
   int speed;
 
-  Spaceship(int xpos, Color color, int size, int speed){
+  Spaceship(int xpos, Color color, int size, int speed) {
     super(new CartPt(xpos, SPACESHIP_Y), color, size);
     this.speed = SPACESHIP_SPEED;
   }
 
   public IGamePiece move(int dx, int dy) {
-    return new Spaceship(super.loc.x+dx, super.color, super.size, this.speed);
+    return new Spaceship(super.loc.x + dx, super.color, super.size, this.speed);
   }
 
   public WorldImage draw() {
-    return new RectangleImage(size*2, size, OutlineMode.OUTLINE, super.color);
+    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left corner
+    WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
+    RectangleImage ship = new RectangleImage(size * 2, size, OutlineMode.SOLID, super.color);
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
+    return new OverlayOffsetImage(board, super.loc.x, super.loc.y, ship);
   }
 }
 
 class Invader extends AGamePiece {
 
-  static Color DEFAULT_COLOR = Color.MAGENTA;
-  static int DEFAULT_SIZE = 50; // change later, arbitrary number
+  static final Color DEFAULT_COLOR = Color.MAGENTA;
+  static final int DEFAULT_SIZE = 50; // change later, arbitrary number
 
   Invader(CartPt loc) {
     super(loc, DEFAULT_COLOR, DEFAULT_SIZE);
   }
 
   public IGamePiece move(int dx, int dy) {
-    return new Invader(new CartPt(super.loc.x+dx, super.loc.y+dy));
+    return new Invader(new CartPt(super.loc.x + dx, super.loc.y + dy));
   }
 
   public WorldImage draw() {
-    return new RectangleImage(size*2, size, OutlineMode.OUTLINE, super.color);
+    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left corner
+    WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
+    RectangleImage inv = new RectangleImage(size * 2, size, OutlineMode.OUTLINE, super.color);
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
+    return new OverlayOffsetImage(board, super.loc.x, super.loc.y, inv);
   }
 }
 
+// Stop Using
 class InvaderColumn {
   // look at adding an int here to track the stack of invader rows 
-  int column; 
+  int column;
   IList<Invader> invaders;
 
   InvaderColumn(IList<Invader> invaders, int rank) {
     this.invaders = invaders;
-    this.column = rank; 
+    this.column = rank;
   }
 }
 
 interface IBullet {
   static int BULLET_SPEED = 5; // change later -----------
   static int BULLET_SIZE = 10; // change later
+
+  WorldImage draw();
 }
 
-abstract class ABullet implements IBullet{
+abstract class ABullet implements IBullet {
   CartPt position;
   int size;
   int speed;
@@ -229,17 +247,27 @@ abstract class ABullet implements IBullet{
     this.size = BULLET_SIZE;
     this.speed = BULLET_SPEED;
   }
-}
 
-class SpaceshipBullet extends ABullet {
-  
-  SpaceshipBullet(CartPt posn) {
-    super(posn);
+  public WorldImage draw() {
+    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left corner
+    WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
+    RectangleImage bul = new RectangleImage(size * 2, size, OutlineMode.SOLID, Color.RED);
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
+    return new OverlayOffsetImage(board, this.position.x, this.position.y, bul);
   }
 }
 
+class SpaceshipBullet extends ABullet {
+
+  SpaceshipBullet(CartPt posn) {
+    super(posn);
+  }
+
+
+}
+
 class InvaderBullet extends ABullet {
-  
+
   InvaderBullet(CartPt posn) {
     super(posn);
   }
@@ -272,111 +300,109 @@ class SpaceshipBullets {
  */
 
 class ExamplesSpaceInvaders {
-  ExamplesSpaceInvaders() {
-  }
-  
+
   // invader CartPt's
   // Column_Row
   CartPt IP1_1 = new CartPt(100, 800);
   CartPt IP1_2 = new CartPt(100, 700);
   CartPt IP1_3 = new CartPt(100, 600);
-  
+
   CartPt IP2_1 = new CartPt(200, 800);
   CartPt IP2_2 = new CartPt(200, 700);
   CartPt IP2_3 = new CartPt(200, 600);
-  
+
   CartPt IP3_1 = new CartPt(300, 800);
   CartPt IP3_2 = new CartPt(300, 700);
   CartPt IP3_3 = new CartPt(300, 600);
-  
+
   CartPt IP4_1 = new CartPt(400, 800);
   CartPt IP4_2 = new CartPt(400, 700);
   CartPt IP4_3 = new CartPt(400, 600);
-  
+
   CartPt IP5_1 = new CartPt(500, 800);
   CartPt IP5_2 = new CartPt(500, 700);
   CartPt IP5_3 = new CartPt(500, 600);
-  
+
   CartPt IP6_1 = new CartPt(600, 800);
   CartPt IP6_2 = new CartPt(600, 700);
   CartPt IP6_3 = new CartPt(600, 600);
-  
+
   CartPt IP7_1 = new CartPt(700, 800);
   CartPt IP7_2 = new CartPt(700, 700);
   CartPt IP7_3 = new CartPt(700, 600);
-  
+
   CartPt IP8_1 = new CartPt(800, 800);
   CartPt IP8_2 = new CartPt(800, 700);
   CartPt IP8_3 = new CartPt(800, 600);
-  
+
   CartPt IP9_1 = new CartPt(900, 800);
   CartPt IP9_2 = new CartPt(900, 700);
   CartPt IP9_3 = new CartPt(900, 600);
-  
+
   //invaders
   Invader Inv1_1 = new Invader(this.IP1_1);
   Invader Inv1_2 = new Invader(this.IP1_2);
   Invader Inv1_3 = new Invader(this.IP1_3);
-  
+
   Invader Inv2_1 = new Invader(this.IP2_1);
   Invader Inv2_2 = new Invader(this.IP2_2);
   Invader Inv2_3 = new Invader(this.IP2_3);
-  
+
   Invader Inv3_1 = new Invader(this.IP3_1);
   Invader Inv3_2 = new Invader(this.IP3_2);
   Invader Inv3_3 = new Invader(this.IP3_3);
-  
+
   Invader Inv4_1 = new Invader(this.IP4_1);
   Invader Inv4_2 = new Invader(this.IP4_2);
   Invader Inv4_3 = new Invader(this.IP4_3);
-  
+
   Invader Inv5_1 = new Invader(this.IP5_1);
   Invader Inv5_2 = new Invader(this.IP5_2);
   Invader Inv5_3 = new Invader(this.IP5_3);
-  
+
   Invader Inv6_1 = new Invader(this.IP6_1);
   Invader Inv6_2 = new Invader(this.IP6_2);
   Invader Inv6_3 = new Invader(this.IP6_3);
-  
+
   Invader Inv7_1 = new Invader(this.IP7_1);
   Invader Inv7_2 = new Invader(this.IP7_2);
   Invader Inv7_3 = new Invader(this.IP7_3);
-  
+
   Invader Inv8_1 = new Invader(this.IP8_1);
   Invader Inv8_2 = new Invader(this.IP8_2);
   Invader Inv8_3 = new Invader(this.IP8_3);
-  
+
   Invader Inv9_1 = new Invader(this.IP9_1);
   Invader Inv9_2 = new Invader(this.IP9_2);
   Invader Inv9_3 = new Invader(this.IP9_3);
-  
-  IList<Invader> InvL1 = new ConsList<Invader>(this.Inv1_1, new ConsList<Invader>(this.Inv1_2,
-      new ConsList<Invader>(this.Inv1_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL2 = new ConsList<Invader>(this.Inv2_1, new ConsList<Invader>(this.Inv2_2,
-      new ConsList<Invader>(this.Inv2_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL3 = new ConsList<Invader>(this.Inv3_1, new ConsList<Invader>(this.Inv3_2,
-      new ConsList<Invader>(this.Inv3_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL4 = new ConsList<Invader>(this.Inv4_1, new ConsList<Invader>(this.Inv4_2,
-      new ConsList<Invader>(this.Inv4_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL5 = new ConsList<Invader>(this.Inv5_1, new ConsList<Invader>(this.Inv5_2,
-      new ConsList<Invader>(this.Inv5_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL6 = new ConsList<Invader>(this.Inv6_1, new ConsList<Invader>(this.Inv6_2,
-      new ConsList<Invader>(this.Inv6_3, new MtList<Invader>())));
 
-  IList<Invader> InvL7 = new ConsList<Invader>(this.Inv7_1, new ConsList<Invader>(this.Inv7_2,
-      new ConsList<Invader>(this.Inv7_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL8 = new ConsList<Invader>(this.Inv8_1, new ConsList<Invader>(this.Inv8_2,
-      new ConsList<Invader>(this.Inv8_3, new MtList<Invader>())));
-  
-  IList<Invader> InvL9 = new ConsList<Invader>(this.Inv9_1, new ConsList<Invader>(this.Inv9_2,
-      new ConsList<Invader>(this.Inv9_3, new MtList<Invader>()))); 
-  
+  IList<Invader> InvL1 = new ConsList<Invader>(this.Inv1_1,
+      new ConsList<Invader>(this.Inv1_2, new ConsList<Invader>(this.Inv1_3, new MtList<Invader>())));
+
+  IList<Invader> InvL2 = new ConsList<Invader>(this.Inv2_1,
+      new ConsList<Invader>(this.Inv2_2, new ConsList<Invader>(this.Inv2_3, new MtList<Invader>())));
+
+  IList<Invader> InvL3 = new ConsList<Invader>(this.Inv3_1,
+      new ConsList<Invader>(this.Inv3_2, new ConsList<Invader>(this.Inv3_3, new MtList<Invader>())));
+
+  IList<Invader> InvL4 = new ConsList<Invader>(this.Inv4_1,
+      new ConsList<Invader>(this.Inv4_2, new ConsList<Invader>(this.Inv4_3, new MtList<Invader>())));
+
+  IList<Invader> InvL5 = new ConsList<Invader>(this.Inv5_1,
+      new ConsList<Invader>(this.Inv5_2, new ConsList<Invader>(this.Inv5_3, new MtList<Invader>())));
+
+  IList<Invader> InvL6 = new ConsList<Invader>(this.Inv6_1,
+      new ConsList<Invader>(this.Inv6_2, new ConsList<Invader>(this.Inv6_3, new MtList<Invader>())));
+
+  IList<Invader> InvL7 = new ConsList<Invader>(this.Inv7_1,
+      new ConsList<Invader>(this.Inv7_2, new ConsList<Invader>(this.Inv7_3, new MtList<Invader>())));
+
+  IList<Invader> InvL8 = new ConsList<Invader>(this.Inv8_1,
+      new ConsList<Invader>(this.Inv8_2, new ConsList<Invader>(this.Inv8_3, new MtList<Invader>())));
+
+  IList<Invader> InvL9 = new ConsList<Invader>(this.Inv9_1,
+      new ConsList<Invader>(this.Inv9_2, new ConsList<Invader>(this.Inv9_3, new MtList<Invader>())));
+
   InvaderColumn Col1 = new InvaderColumn(this.InvL1, 1);
   InvaderColumn Col2 = new InvaderColumn(this.InvL2, 2);
   InvaderColumn Col3 = new InvaderColumn(this.InvL3, 3);
@@ -386,22 +412,13 @@ class ExamplesSpaceInvaders {
   InvaderColumn Col7 = new InvaderColumn(this.InvL7, 7);
   InvaderColumn Col8 = new InvaderColumn(this.InvL8, 8);
   InvaderColumn Col9 = new InvaderColumn(this.InvL9, 9);
-  
-  IList<InvaderColumn> Columns =
-      new ConsList<InvaderColumn>(this.Col1,
-          new ConsList<InvaderColumn>(this.Col2,
+
+  IList<InvaderColumn> Columns = new ConsList<InvaderColumn>(this.Col1,
+      new ConsList<InvaderColumn>(this.Col2,
+          new ConsList<InvaderColumn>(this.Col3,
               new ConsList<InvaderColumn>(this.Col3,
-                  new ConsList<InvaderColumn>(this.Col3,
-                      new ConsList<InvaderColumn>(this.Col5,
-                          new ConsList<InvaderColumn>(this.Col6,
-                              new ConsList<InvaderColumn>(this.Col7,
-                                  new ConsList<InvaderColumn>(this.Col8,
-                                      new ConsList<InvaderColumn>(this.Col9,
-                                          new MtList<InvaderColumn>())))))))));
+                  new ConsList<InvaderColumn>(this.Col5,
+                      new ConsList<InvaderColumn>(this.Col6,
+                          new ConsList<InvaderColumn>(this.Col7, new ConsList<InvaderColumn>(this.Col8,
+                              new ConsList<InvaderColumn>(this.Col9, new MtList<InvaderColumn>())))))))));
 }
-
-
-
-
-
-
