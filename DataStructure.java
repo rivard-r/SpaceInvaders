@@ -120,14 +120,6 @@ class orMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   }
 }
 
-// possibly obsolete
-class convertInvaderColumnsToImage implements Function<IList<IList<Invader>>, IList<IList<WorldImage>>> {
-
-  public IList<IList<WorldImage>> apply(IList<IList<Invader>> t) {
-    return t.map(new InvaderListToImageList());
-  }
-}
-
 class InvaderListToImageList implements Function<IList<Invader>, IList<WorldImage>> {
 
   public IList<WorldImage> apply(IList<Invader> t) {
@@ -138,6 +130,30 @@ class InvaderListToImageList implements Function<IList<Invader>, IList<WorldImag
 class InvaderToImage implements Function<Invader, WorldImage> {
 
   public WorldImage apply(Invader t) {
+    return t.draw();
+  }
+}
+
+
+class CrunchInvaderList implements BiFunction<IList<WorldImage>, WorldScene, WorldScene> {
+
+  public WorldScene apply(IList<WorldImage> arg0, WorldScene arg1) {
+    return arg0.fold(new CrunchWorldImage(), arg1);
+  }
+
+}
+
+class CrunchWorldImage implements BiFunction<WorldImage, WorldScene, WorldScene> {
+
+  public WorldScene apply(WorldImage arg0, WorldScene arg1) {
+    return arg1.placeImageXY(arg0, 0, 0);
+  }
+
+}
+
+class BulletToImage implements Function<IBullet, WorldImage> {
+
+  public WorldImage apply(IBullet t) {
     return t.draw();
   }
 }

@@ -1,6 +1,8 @@
 import tester.*;                
 import javalib.worldimages.*;   
-import javalib.funworld.*;      
+import javalib.funworld.*;
+
+
 import java.awt.Color;
 import java.util.Random; 
 
@@ -14,7 +16,8 @@ class WorldState extends World {
 
   public WorldScene makeScene() {
     // fold(convert invaders to list of images) + (spaceship image) + fold(convert bullets to images)
-    return invaders.map(new InvaderListToImageList()).fold(converter, initial)
+    return bullets.map(new BulletToImage()).fold(new CrunchWorldImage(), invaders.map(new InvaderListToImageList()).fold(new CrunchInvaderList(), 
+      new WorldScene(1000, 1000)).placeImageXY(spaceship.draw(), 0, 0));
   }
 
   //move the dots on the scene
