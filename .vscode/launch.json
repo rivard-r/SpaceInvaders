@@ -15,7 +15,10 @@
       "name": "Launch Tester Class",
       "request": "launch",
       "mainClass": "tester.Main",
-      "args": "ExamplesSpaceInvaders"
+      "args": "ExamplesSpaceInvaders",
+      "env": {
+      
+      }  
     }
   ]
 }
