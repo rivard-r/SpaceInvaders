@@ -192,6 +192,7 @@ abstract class AGamePiece implements IGamePiece {
 class Spaceship extends AGamePiece {
   static int SPACESHIP_Y = 10; // change later, trying to set permanent Y
   static int SPACESHIP_SPEED = 20; // change later, arbritrary number
+  static Color SPACESHIP_COLOR = Color.BLUE;
   int speed;
 
   Spaceship(int xpos, Color color, int size, int speed) {
@@ -228,7 +229,7 @@ class Invader extends AGamePiece {
   public WorldImage draw() {
     // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left corner
     WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
-    RectangleImage inv = new RectangleImage(size * 2, size, OutlineMode.OUTLINE, super.color);
+    RectangleImage inv = new RectangleImage(size, size, OutlineMode.SOLID, super.color);
     // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, super.loc.x, super.loc.y, inv);
   }
@@ -316,6 +317,24 @@ class SpaceshipBullets {
  */
 
 class ExamplesSpaceInvaders {
+
+
+  // bullets examples
+  CartPt B1_1 = new CartPt(321, 400);
+  CartPt B1_2 = new CartPt(500, 100);
+  CartPt B2_1 = new CartPt(700, 900);
+  CartPt B2_2 = new CartPt(100, 150);
+
+  IBullet IB1 = new InvaderBullet(B1_1);
+  IBullet IB2 = new InvaderBullet(B1_2);
+  IBullet SB1 = new SpaceshipBullet(B2_1);
+  IBullet SB2 = new SpaceshipBullet(B2_2);
+
+  IList<IBullet> CompleteBullets = new ConsList<IBullet>(IB1, new ConsList<IBullet>(IB2,
+      new ConsList<IBullet>(SB1, new ConsList<IBullet>(SB2, new MtList<IBullet>()))));
+
+  //spaceship example
+  Spaceship SP1 = new Spaceship(500, Color.RED, 50, 10);
 
   // invader CartPt's
   // Column_Row
@@ -419,22 +438,24 @@ class ExamplesSpaceInvaders {
   IList<Invader> InvL9 = new ConsList<Invader>(this.Inv9_1,
       new ConsList<Invader>(this.Inv9_2, new ConsList<Invader>(this.Inv9_3, new MtList<Invader>())));
 
-  InvaderColumn Col1 = new InvaderColumn(this.InvL1, 1);
-  InvaderColumn Col2 = new InvaderColumn(this.InvL2, 2);
-  InvaderColumn Col3 = new InvaderColumn(this.InvL3, 3);
-  InvaderColumn Col4 = new InvaderColumn(this.InvL4, 4);
-  InvaderColumn Col5 = new InvaderColumn(this.InvL5, 5);
-  InvaderColumn Col6 = new InvaderColumn(this.InvL6, 6);
-  InvaderColumn Col7 = new InvaderColumn(this.InvL7, 7);
-  InvaderColumn Col8 = new InvaderColumn(this.InvL8, 8);
-  InvaderColumn Col9 = new InvaderColumn(this.InvL9, 9);
+  IList<IList<Invader>> CompleteInvaders = new ConsList<IList<Invader>>(InvL1, new ConsList<IList<Invader>>(InvL2, 
+      new ConsList<IList<Invader>>(InvL3, new ConsList<IList<Invader>>(InvL4, new ConsList<IList<Invader>>(InvL5,
+      new ConsList<IList<Invader>>(InvL6, new ConsList<IList<Invader>>(InvL7, new ConsList<IList<Invader>>(InvL8,
+      new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
 
-  IList<InvaderColumn> Columns = new ConsList<InvaderColumn>(this.Col1,
-      new ConsList<InvaderColumn>(this.Col2,
-          new ConsList<InvaderColumn>(this.Col3,
-              new ConsList<InvaderColumn>(this.Col3,
-                  new ConsList<InvaderColumn>(this.Col5,
-                      new ConsList<InvaderColumn>(this.Col6,
-                          new ConsList<InvaderColumn>(this.Col7, new ConsList<InvaderColumn>(this.Col8,
-                              new ConsList<InvaderColumn>(this.Col9, new MtList<InvaderColumn>())))))))));
+  public boolean testDraw(Tester t) {
+    WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
+
+    return t.checkExpect(Inv1_1.draw(), new OverlayOffsetImage(board, 100, 800, 
+            new RectangleImage(50, 50, OutlineMode.SOLID, Color.MAGENTA)));
+
+  }
+
+  boolean testBigBang(Tester t) {
+    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets);
+    int worldWidth = 1000;
+    int worldHeight = 400;
+    double tickRate = 0;
+    return world.bigBang(worldWidth, worldHeight, tickRate);
+  }
 }
