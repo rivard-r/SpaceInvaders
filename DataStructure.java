@@ -94,28 +94,32 @@ class ConsList<T> implements IList<T> {
     return 1 + this.rest.length();
   }
 
+  // check if the predicate is true for all members of the list
   public boolean andMap(Predicate<T> pred) {
     return this.map((s) -> pred.test(s)).fold(new andMapHelp(), true);
   }
 
+  // check if the predicate is true for at least one member of the list
   public boolean orMap(Predicate<T> pred) {
     return this.map((s) -> pred.test(s)).fold(new orMapHelp(), false);
   }
-
 }
 
-class andMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
+// assists andMap by returning true if either passed parameters are true
+class AndMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
     return current && acc;
   }
 }
 
-class orMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
+// assists orMap by returning true if either passed arguments are true
+class OrMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
     return current || acc;
   }
 }
 
+// converts an IList<WorldImage> to an IList<Invader> by mapping InvaderToImage 
 class InvaderListToImageList implements Function<IList<Invader>, IList<WorldImage>> {
 
   public IList<WorldImage> apply(IList<Invader> t) {
@@ -123,6 +127,7 @@ class InvaderListToImageList implements Function<IList<Invader>, IList<WorldImag
   }
 }
 
+// converts an invader to a WorldImage by invoking its draw function
 class InvaderToImage implements Function<Invader, WorldImage> {
 
   public WorldImage apply(Invader t) {
@@ -130,6 +135,9 @@ class InvaderToImage implements Function<Invader, WorldImage> {
   }
 }
 
+// a fold function which is used to crunch an IList<WorldImage> into a single
+//  WorldScene by applying 
+// placeImageXY through CrunchWorldImage to each WorldImage
 class CrunchInvaderList implements BiFunction<IList<WorldImage>, WorldScene, WorldScene> {
 
   public WorldScene apply(IList<WorldImage> arg0, WorldScene arg1) {
@@ -138,6 +146,9 @@ class CrunchInvaderList implements BiFunction<IList<WorldImage>, WorldScene, Wor
 
 }
 
+// Applies the given WorldImage to the given WorldScene through placImageXY
+// Offsets the images by half the board length to the right and down to place the pin in
+// the top left of the board
 class CrunchWorldImage implements BiFunction<WorldImage, WorldScene, WorldScene> {
 
   public WorldScene apply(WorldImage arg0, WorldScene arg1) {
@@ -146,6 +157,7 @@ class CrunchWorldImage implements BiFunction<WorldImage, WorldScene, WorldScene>
 
 }
 
+// converts a bullet to a WorldImage by invoking its draw function
 class BulletToImage implements Function<IBullet, WorldImage> {
 
   public WorldImage apply(IBullet t) {
@@ -153,6 +165,8 @@ class BulletToImage implements Function<IBullet, WorldImage> {
   }
 }
 
+// checks if the testing CartPt exists within the IList<CartPt> provided
+// during this predicate's construction
 class ChordMatch implements Predicate<CartPt> {
   IList<CartPt> points;
 
@@ -165,6 +179,8 @@ class ChordMatch implements Predicate<CartPt> {
   }
 }
 
+// helps ChordMatch by returning true if the tested CartPt matches the 
+// CartPt provided during this predicate's construction in both x and y
 class PointsEqual implements Predicate<CartPt> {
   CartPt given;
 
@@ -178,13 +194,15 @@ class PointsEqual implements Predicate<CartPt> {
 
 }
 
-//MakeCartPt
+// Assists MakeListOfColumns by 
 class MakeCartPt implements BiFunction<Integer, Integer, CartPt> {
 
   public CartPt apply(Integer col, Integer row) {
-    int BASE_X = 0;
-    int BASE_Y = -550;
-    return new CartPt(BASE_X + (col * 50), BASE_Y + (row * 50));
+    int baseX = 100;
+    int baseY = -500;
+    int numCol = 9;
+    int numRow = 3;
+    return new CartPt(baseX + ((numCol - col) * 50), baseY + ((numRow - row) * 100));
   }
 }
 
@@ -213,7 +231,10 @@ class MakeListOfColumns implements Function<Integer, IList<IList<Invader>>> {
   }
 }
 
+// A utility object that contains two generic build list functions 
 class Utils {
+  // uses a sentinel value a to continue building a list according to the passed function until
+  // a reaches 0
   <U> IList<U> buildList(Function<Integer, U> func, int a) {
     if (a > 0) {
       return new ConsList<U>(func.apply(a), this.buildList(func, a - 1));
@@ -222,6 +243,8 @@ class Utils {
     }
   }
 
+  // uses a sentinel value b to continue building a list according to the passed bifunction until
+  // b reaches 0, also passes a value a through each iteration 
   <U> IList<U> buildListBi(BiFunction<Integer, Integer, U> func, int a, int b) {
     if (b > 0) {
       return new ConsList<U>(func.apply(a, b), this.buildListBi(func, a, b - 1));
@@ -235,6 +258,7 @@ class Utils {
   }
 }
 
+// An object representing a Cartesian point (x, y)
 class CartPt {
   int x;
   int y;
@@ -282,21 +306,20 @@ class Spaceship extends AGamePiece {
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
     // corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
-    WorldImage testBoard = new VisiblePinholeImage(board, Color.RED);
     RectangleImage ship = new RectangleImage(super.size * 2, super.size, OutlineMode.SOLID, super.color);
     // places rectangle image on the board image, offset by the pieces loc from the
     // pinhole
-    return new OverlayOffsetImage(testBoard, super.loc.x, super.loc.y, ship);
+    return new OverlayOffsetImage(board, super.loc.x, super.loc.y, ship);
   }
 }
 
 class Invader extends AGamePiece {
 
   static final Color DEFAULT_COLOR = Color.MAGENTA;
-  static final int DEFAULT_SIZE = 15; // change later, arbitrary number
+  static final int DEFAULT_SIZE = 15;
 
   Invader(CartPt loc) {
     super(loc, DEFAULT_COLOR, DEFAULT_SIZE);
@@ -307,14 +330,13 @@ class Invader extends AGamePiece {
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
     // corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
-    WorldImage testBoard = new VisiblePinholeImage(board, Color.RED);
     RectangleImage inv = new RectangleImage(DEFAULT_SIZE, DEFAULT_SIZE, OutlineMode.SOLID, super.color);
     // places rectangle image on the board image, offset by the pieces loc from the
     // pinhole
-    return new OverlayOffsetImage(testBoard, super.loc.x, super.loc.y, inv);
+    return new OverlayOffsetImage(board, super.loc.x, super.loc.y, inv);
   }
 }
 
@@ -349,7 +371,7 @@ abstract class ABullet implements IBullet {
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 1000x1000 and moves pinhole to bottom left
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
     // corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
     RectangleImage bul = new RectangleImage(size, size, OutlineMode.SOLID, Color.RED);
@@ -373,32 +395,6 @@ class InvaderBullet extends ABullet {
     super(posn);
   }
 }
-
-class InvaderBullets {
-  IList<InvaderBullet> bullets;
-
-  InvaderBullets(IList<InvaderBullet> bullets) {
-    this.bullets = bullets;
-  }
-}
-
-class SpaceshipBullets {
-  IList<SpaceshipBullet> bullets;
-
-  SpaceshipBullets(IList<SpaceshipBullet> bullets) {
-    this.bullets = bullets;
-  }
-}
-
-/*
- * IListDraw<T>() new
- * WorldScene().placeImageXY(this.first.draw().this.rest.IListDraw())
- * 
- * 
- * where does it draw?
- * 
- * InvaderColumnmap(draw)
- */
 
 class ExamplesSpaceInvaders {
 
@@ -494,6 +490,11 @@ class ExamplesSpaceInvaders {
   Invader Inv9_2 = new Invader(this.IP9_2);
   Invader Inv9_3 = new Invader(this.IP9_3);
 
+  IList<CartPt> CPList1 = new ConsList<CartPt>(this.IP1_1,
+      new ConsList<CartPt>(this.IP1_2, new ConsList<CartPt>(this.IP1_3, new MtList<CartPt>())));
+  IList<CartPt> CPList2 = new ConsList<CartPt>(this.IP3_2,
+      new ConsList<CartPt>(this.IP3_3, new ConsList<CartPt>(this.IP3_1, new MtList<CartPt>())));
+
   IList<Invader> InvL1 = new ConsList<Invader>(this.Inv1_1,
       new ConsList<Invader>(this.Inv1_2, new ConsList<Invader>(this.Inv1_3, new MtList<Invader>())));
 
@@ -531,10 +532,10 @@ class ExamplesSpaceInvaders {
                               new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
 
   public boolean testDraw(Tester t) {
-    WorldImage board = new RectangleImage(1000, 1000, "outline", Color.black).movePinhole(-1000, -1000);
+    WorldImage board = new RectangleImage(600, 600, "outline", Color.black).movePinhole(-300, 300);
 
     return t.checkExpect(Inv1_1.draw(),
-        new OverlayOffsetImage(board, 100, 800, new RectangleImage(50, 50, OutlineMode.SOLID, Color.MAGENTA)));
+        new OverlayOffsetImage(board, 100, -500, new RectangleImage(15, 15, OutlineMode.SOLID, Color.MAGENTA)));
   }
 
   // TEST FOR FULL GAME
@@ -546,6 +547,23 @@ class ExamplesSpaceInvaders {
     double tickRate = 0;
     return world.bigBang(worldWidth, worldHeight, tickRate);
   }
+
+  // test the method ChordMatch and orMap
+  public boolean testChordMatch(Tester t) {
+    return t.checkExpect(new ChordMatch(this.CPList1).test(new CartPt(800, 900)), false)
+        && t.checkExpect(new ChordMatch(this.CPList2).test(new CartPt(200, -400)), true);
+  }
+
+  //test the method MakeInvaders and the function classes MakeListOfColumns, 
+  // MakeInvaderList, MakeInvader, and MakeCartPt
+  public boolean testMakeInvaders(Tester t) {
+    return t.checkExpect(new Utils().makeInvaders(9), this.CompleteInvaders)
+        && t.checkExpect(new Utils().makeInvaders(1),
+            new ConsList<IList<Invader>>(this.InvL9, new MtList<IList<Invader>>()))
+        && t.checkExpect(new Utils().makeInvaders(0), new MtList<Invader>());
+  }
+
+  // TEST FOR INDIVIDUAL LISTS OF OBJECTS
   /*
    * IList<WorldImage> exampleList = new ConsList<WorldImage>(IB1.draw(), new
    * ConsList<WorldImage>(SP1.draw(), new MtList<WorldImage>())); boolean
