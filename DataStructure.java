@@ -96,12 +96,12 @@ class ConsList<T> implements IList<T> {
 
   // check if the predicate is true for all members of the list
   public boolean andMap(Predicate<T> pred) {
-    return this.map((s) -> pred.test(s)).fold(new andMapHelp(), true);
+    return this.map((s) -> pred.test(s)).fold(new AndMapHelp(), true);
   }
 
   // check if the predicate is true for at least one member of the list
   public boolean orMap(Predicate<T> pred) {
-    return this.map((s) -> pred.test(s)).fold(new orMapHelp(), false);
+    return this.map((s) -> pred.test(s)).fold(new OrMapHelp(), false);
   }
 }
 
