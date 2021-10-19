@@ -304,9 +304,9 @@ class Spaceship extends AGamePiece {
   // according to its current travel path. If the spaceship is at either boarder moving the direciton
   // into the border it will not be changed
   public Spaceship move() {
-    if (this.isTravelingRight && this.loc.x >= (600-this.size)){
+    if (this.isTravelingRight == true && super.loc.x <= (600-super.size)){
       return new Spaceship(super.loc.x + this.speed, this.isTravelingRight);
-    } else if (this.isTravelingRight == false && this.loc.x >= this.size){
+    } else if (this.isTravelingRight == false && super.loc.x >= super.size){
       return new Spaceship(super.loc.x - this.speed, this.isTravelingRight);
     } else {
       return this;

@@ -105,6 +105,9 @@ class WorldState extends World {
             .placeImageXY(spaceship.draw(), 300, 300));
   }
 
+  // every tick run through the movment game rules and bullet generation using 
+  // updateWorld() then check for any bullet-gamePiece overlap with resolveEvents()
+  // and modify the world accordingly 
   public World onTick() {
     if (this.gameOver) {
       this.endOfWorld("Game Over");
