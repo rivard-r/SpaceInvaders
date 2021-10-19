@@ -143,7 +143,6 @@ class CrunchInvaderList implements BiFunction<IList<WorldImage>, WorldScene, Wor
   public WorldScene apply(IList<WorldImage> arg0, WorldScene arg1) {
     return arg0.fold(new CrunchWorldImage(), arg1);
   }
-
 }
 
 // Applies the given WorldImage to the given WorldScene through placImageXY
@@ -154,7 +153,6 @@ class CrunchWorldImage implements BiFunction<WorldImage, WorldScene, WorldScene>
   public WorldScene apply(WorldImage arg0, WorldScene arg1) {
     return arg1.placeImageXY(arg0, 300, 300);
   }
-
 }
 
 // converts a bullet to a WorldImage by invoking its draw function
@@ -224,9 +222,7 @@ class MakeInvaderList implements Function<Integer, IList<Invader>> {
 
 class MakeListOfColumns implements Function<Integer, IList<IList<Invader>>> {
 
-  @Override
   public IList<IList<Invader>> apply(Integer x) {
-
     return new Utils().buildList(new MakeInvaderList(), x);
   }
 }
@@ -271,9 +267,8 @@ class CartPt {
 
 interface IGamePiece {
 
-  // move this IGamePiece by the given x and y as allowed by its movement rules
-  // pieces that cannot move the commanded direction will ignore the movement
-  IGamePiece move(int dx, int dy);
+  // move this IGamePiece by an x and y as dictated by its movement rules and speed
+  IGamePiece move();
 
   // draw this IGamePiece overlaid on a standard 600x600 board
   WorldImage draw();
@@ -293,7 +288,7 @@ abstract class AGamePiece implements IGamePiece {
 
 class Spaceship extends AGamePiece {
   static final int SPACESHIP_Y = -20; // change later, trying to set permanent Y
-  static final int SPACESHIP_SPEED = 20; // change later, arbritrary number
+  static final int SPACESHIP_SPEED = 10; // change later, arbritrary number
   static final Color SPACESHIP_COLOR = Color.BLUE;
   static final int SPACESHIP_SIZE = 30;
   int speed;
@@ -305,8 +300,17 @@ class Spaceship extends AGamePiece {
     this.isTravelingRight = isTravelingRight;
   }
 
-  public IGamePiece move(int dx, int dy) {
-    return new Spaceship(super.loc.x + dx, this.isTravelingRight);
+  // creates a new spaceship shifted by the number of units dictated by its speed either left or right 
+  // according to its current travel path. If the spaceship is at either boarder moving the direciton
+  // into the border it will not be changed
+  public Spaceship move() {
+    if (this.isTravelingRight && this.loc.x >= (600-this.size)){
+      return new Spaceship(super.loc.x + this.speed, this.isTravelingRight);
+    } else if (this.isTravelingRight == false && this.loc.x >= this.size){
+      return new Spaceship(super.loc.x - this.speed, this.isTravelingRight);
+    } else {
+      return this;
+    }
   }
 
   public WorldImage draw() {
@@ -315,6 +319,16 @@ class Spaceship extends AGamePiece {
     RectangleImage ship = new RectangleImage(super.size * 2, super.size, OutlineMode.SOLID, super.color);
     // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, super.loc.x, super.loc.y, ship);
+  }
+
+  // changes the direction of this spaceship to left
+  public Spaceship goLeft() {
+    return new Spaceship(this.loc.x, false);
+  }
+
+  // changes the direction of this spaceship to right
+  public Spaceship goRight() {
+    return new Spaceship(this.loc.x, true);
   }
 }
 
@@ -327,8 +341,8 @@ class Invader extends AGamePiece {
     super(loc, INVADER_COLOR, INVADER_SIZE);
   }
 
-  // Invaders canot move
-  public IGamePiece move(int dx, int dy) {
+  // Invaders cannot move
+  public Invader move() {
     return this;
   }
 
@@ -543,7 +557,7 @@ class ExamplesSpaceInvaders {
   // TEST FOR FULL GAME
 
   boolean testBigBang(Tester t) {
-    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets);
+    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, false);
     int worldWidth = 600;
     int worldHeight = 600;
     double tickRate = 0;
