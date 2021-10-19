@@ -121,6 +121,14 @@ class AppendPtLists implements BiFunction<CartPt, IList<CartPt>, IList<CartPt>> 
   }
 }
 
+// assists FlattenCartPtList by stitching one IList<CartPt> into another though ConsList<CartPt>
+class AppendBulletLists implements BiFunction<IBullet, IList<IBullet>, IList<IBullet>> {
+
+  public IList<IBullet> apply(IBullet arg0, IList<IBullet> arg1) {
+    return new ConsList<IBullet>(arg0, arg1);
+  }
+}
+
 // assists andMap by returning true if either passed parameters are true
 class AndMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
@@ -202,7 +210,7 @@ class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
 
   public IList<CartPt> apply(IList<Invader> t) {
     // distributes the max allowed shots evenly between each row 
-    return t.map(new MayFire(shotsAvailible / t.length()));
+    return t.map(new MayFire(shotsAvailible));
   }
 }
 
@@ -216,7 +224,7 @@ class MayFire implements Function<Invader, CartPt> {
   public CartPt apply(Invader t) {
     // checks to see if any other shots are allowed, if so there is a 10% chance that the currently
     // evaluated invader's actual chords are returned, scaled for the origin of the bullet
-    if (shotsAvailible > 0 && (int) Math.random() * 10 == 1) {
+    if (shotsAvailible > 0 && (int)Math.random() * 10 == 1) {
       // each shot decreasaes the ammount of shots availible by 1
       this.shotsAvailible--;
       return t.loc;
@@ -339,7 +347,7 @@ abstract class AGamePiece implements IGamePiece {
 
 class Spaceship extends AGamePiece {
   static final int SPACESHIP_Y = -20; // change later, trying to set permanent Y
-  static final int SPACESHIP_SPEED = 10; // change later, arbritrary number
+  static final int SPACESHIP_SPEED = 2; // change later, arbritrary number
   static final Color SPACESHIP_COLOR = Color.BLUE;
   static final int SPACESHIP_SIZE = 30;
   int speed;
@@ -355,9 +363,9 @@ class Spaceship extends AGamePiece {
   // according to its current travel path. If the spaceship is at either boarder moving the direciton
   // into the border it will not be changed
   public Spaceship move() {
-    if (this.isTravelingRight == true && super.loc.x <= (600 - super.size)) {
+    if (this.isTravelingRight == true && super.loc.x < (600 - super.size)) {
       return new Spaceship(super.loc.x + this.speed, this.isTravelingRight);
-    } else if (this.isTravelingRight == false && super.loc.x >= super.size) {
+    } else if (this.isTravelingRight == false && super.loc.x > super.size) {
       return new Spaceship(super.loc.x - this.speed, this.isTravelingRight);
     } else {
       return this;
@@ -419,6 +427,10 @@ interface IBullet {
   // returns 1 for InvaderBullets and 0 for SpaceshipBullets so they may be tallied and compared
   // to the toal lenght of hte bullet list
   int sumInvader();
+
+  // returns true if the bullet's position CartPt has a x between 0 and 600 and
+  // a y between 0 and -600
+  boolean inBounds();
 }
 
 abstract class ABullet implements IBullet {
@@ -442,16 +454,17 @@ abstract class ABullet implements IBullet {
     return new OverlayOffsetImage(board, this.position.x, this.position.y, bul);
   }
 
-  public IBullet updatePosn() {
-    int oldX = this.position.x;
-    int oldY = this.position.y;
-    return new SpaceshipBullet(new CartPt(oldX, oldY + this.speed));
+  public boolean inBounds() {
+    // could add a buffer for bullet size so that as soon as any part of the bullet excaped
+    // it would be removed
+    return (0 <= position.x && position.x <= 600) &&
+          (0 >= position.y && position.y >= -600); 
   }
 }
 
 class SpaceshipBullet extends ABullet {
   static final Color SPACESHIP_BUL_COLOR = Color.GREEN;
-  static final int SPACESHIP_BULLET_SPEED = -5; // -y is up in our chord space
+  static final int SPACESHIP_BULLET_SPEED = -1; // -y is up in our chord space
 
   SpaceshipBullet(CartPt posn) {
     super(posn, SPACESHIP_BUL_COLOR, SPACESHIP_BULLET_SPEED);
@@ -460,11 +473,17 @@ class SpaceshipBullet extends ABullet {
   public int sumInvader() {
     return 0;
   }
+
+  public SpaceshipBullet updatePosn() {
+    int oldX = this.position.x;
+    int oldY = this.position.y;
+    return new SpaceshipBullet(new CartPt(oldX, oldY + this.speed));
+  }
 }
 
 class InvaderBullet extends ABullet {
   static final Color INVADER_BUL_COLOR = Color.ORANGE;
-  static final int INVADER_BULLET_SPEED = 5; // +y is down in our chord space
+  static final int INVADER_BULLET_SPEED = 1; // +y is down in our chord space
 
   InvaderBullet(CartPt posn) {
     super(posn, INVADER_BUL_COLOR, INVADER_BULLET_SPEED);
@@ -472,6 +491,12 @@ class InvaderBullet extends ABullet {
 
   public int sumInvader() {
     return 1;
+  }
+
+  public InvaderBullet updatePosn() {
+    int oldX = this.position.x;
+    int oldY = this.position.y;
+    return new InvaderBullet(new CartPt(oldX, oldY + this.speed));
   }
 }
 
@@ -623,7 +648,7 @@ class ExamplesSpaceInvaders {
     WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, false);
     int worldWidth = 600;
     int worldHeight = 600;
-    double tickRate = 0;
+    double tickRate = 0.02;
     return world.bigBang(worldWidth, worldHeight, tickRate);
   }
 

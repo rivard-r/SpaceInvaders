@@ -41,13 +41,14 @@ class WorldState extends World {
     this.gameOver = gameOver; // added this for easy endgame check
   }
   
+  /*
   public WorldState resolveEvents() {
     return new WorldState(
         this.invaders.filter(new InvInContact(this.bullets)), // ended up doing bullet and 
         this.spaceship,
         this.bullets.filter(new BulInContact(this.invaders)), // invader checks separately
         this.bullets.orMap(new InSSHitRange(this.spaceship)));
-  }
+  }*/
 
   // produces a new world following on tick game rule behavior of motion for all IGamePieces, 
   // ignores all collision and game ending events
@@ -55,7 +56,7 @@ class WorldState extends World {
     return new WorldState(
       this.invaders,
       this.spaceship.move(), 
-      randomFire(this.bullets).map(s->s.updatePosn()),
+      randomFire(this.bullets).map(s->s.updatePosn()).filter(s->s.inBounds()),
       this.gameOver);
   }
 
@@ -68,18 +69,18 @@ class WorldState extends World {
     // fold
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
-    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible)).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible/invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
 
   // converts an IList<CartPt> to an IList<IBullet> using the InvaderBullet constructior
   private IList<IBullet> buildFiredBullets(IList<IBullet> bullets, IList<CartPt> newBulletsLocations) {
-    return newBulletsLocations.map(s->new InvaderBullet(s));
+    return bullets.fold(new AppendBulletLists(), (newBulletsLocations.map(s->new InvaderBullet(s))));
   }
 
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
-    if (key.equals("space")){
-      return new WorldState(this.invaders, this.spaceship, new ConsList<IBullet>(spaceshipFire(), bullets), this.gameOver);
+    if (key.equals("enter")){
+      return new WorldState(this.invaders, this.spaceship, new ConsList<IBullet>(spaceshipFire(), this.bullets), this.gameOver);
     } else if(key.equals("left")) {
       return new WorldState(this.invaders, this.spaceship.goLeft(), this.bullets, this.gameOver); 
     } else if(key.equals("right")) {
@@ -92,7 +93,7 @@ class WorldState extends World {
   // returns a new SpaceshipBullet at the top center of the this spaceship's outline
   private IBullet spaceshipFire() {
     int shipX = this.spaceship.loc.x;
-    int shipY = this.spaceship.loc.y + this.spaceship.size;
+    int shipY = this.spaceship.loc.y - this.spaceship.size/2;
     return new SpaceshipBullet(new CartPt(shipX, shipY));
   }
 
@@ -125,17 +126,13 @@ class WorldState extends World {
       this.endOfWorld("Game Over");
       return this;
     } else {
-      return this.updateWorld().resolveEvents();
+      // add .resolveEvents() here when ready
+    return this.updateWorld();
     }
   }
 
   // required by this.endOfWorld
   public WorldScene lastScene(String msg) {
     return this.makeScene().placeImageXY(new TextImage(msg, Color.BLACK), 0, 0);
-  }
-
-  // not yet implemented
-  public World onTickTest() {
-    return null;
   }
 }
