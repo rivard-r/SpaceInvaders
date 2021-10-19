@@ -59,10 +59,48 @@ class WorldState extends World {
       this.gameOver);
   }
 
-  //
-  private IList<IBullet> randomFire(IList<IBullet> bullets2) {
+  // generates a random number of shots to fire on this tick cycle that is within the 10 shot
+  // maximum and passes this number to randomFireHelper
+  public IList<IBullet> randomFire(IList<IBullet> bullets) {
+    // max allowed bullets at any given time is 10
+    // shotsAvailible is found as max allowed - the sum of all invader bullets in this list of 
+    // bullets. Found through tallying invader bullets with sumInvader and summing the total with
+    // fold
+    int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
+    // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible)).fold((s1,s2)->new ConsList<CartPt>(s1, s2), new MtList<CartPt>()).filter(s->s.x != 999));
+  }
+
+  private IList<IBullet> buildFiredBullets(IList<IBullet> bullets2, IList<IList<CartPt>> filter) {
     return null;
   }
+
+
+  // Not the best approch instead should map a mayFire() across the entire list which has
+  // a 0% chance when there are 0 bullets
+
+  /*
+  private IList<IBullet> randomFire(IList<IBullet> bullets) {
+    int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
+    int shotsToFire = (int)Math.random()*shotsAvailible;
+    return randomFireHelper(bullets, shotsToFire);
+  }
+
+  private IList<IBullet> randomFireHelper(IList<IBullet> bullets, int shotsToFire) {
+    if (shotsToFire == 0) {
+      return bullets;
+    } else {
+      int invRow = (int)Math.random()*this.invaders.length()-1;
+      CartPt randInvaderChords = randInvaderChordsOffset(this.invaders, invRow);
+      return randomFireHelper(new ConsList<IBullet>(new InvaderBullet(randInvaderChords), bullets), shotsToFire--);
+    }
+  }
+
+  private CartPt randInvaderChordsOffset(IList<IList<Invader>> invaders2, int invRow) {
+    return randInvaderChordsOffsetHelper();
+  } */
+
+  
 
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
