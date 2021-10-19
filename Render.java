@@ -68,6 +68,7 @@ class WorldState extends World {
     // bullets. Found through tallying invader bullets with sumInvader and summing the total with
     // fold
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
+    System.out.println(shotsAvailible);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
     return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible/invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
@@ -79,11 +80,11 @@ class WorldState extends World {
 
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
-    if (key.equals("enter")){
+    if (key.equals(" ")){
       return new WorldState(this.invaders, this.spaceship, new ConsList<IBullet>(spaceshipFire(), this.bullets), this.gameOver);
-    } else if(key.equals("left")) {
+    } else if (key.equals("left")) {
       return new WorldState(this.invaders, this.spaceship.goLeft(), this.bullets, this.gameOver); 
-    } else if(key.equals("right")) {
+    } else if (key.equals("right")) {
       return new WorldState(this.invaders, this.spaceship.goRight(), this.bullets, this.gameOver);
     } else {
       return this;

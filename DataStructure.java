@@ -224,7 +224,7 @@ class MayFire implements Function<Invader, CartPt> {
   public CartPt apply(Invader t) {
     // checks to see if any other shots are allowed, if so there is a 10% chance that the currently
     // evaluated invader's actual chords are returned, scaled for the origin of the bullet
-    if (shotsAvailible > 0 && (int)Math.random() * 10 == 1) {
+    if (shotsAvailible > 0 && ((int)(Math.random() * 10)) == 1) {
       // each shot decreasaes the ammount of shots availible by 1
       this.shotsAvailible--;
       return t.loc;
