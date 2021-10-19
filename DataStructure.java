@@ -271,10 +271,11 @@ class CartPt {
 
 interface IGamePiece {
 
-  // move this IGamePiece by the given x and y
+  // move this IGamePiece by the given x and y as allowed by its movement rules
+  // pieces that cannot move the commanded direction will ignore the movement
   IGamePiece move(int dx, int dy);
 
-  // draw this IGamePiece
+  // draw this IGamePiece overlaid on a standard 600x600 board
   WorldImage draw();
 }
 
@@ -291,108 +292,109 @@ abstract class AGamePiece implements IGamePiece {
 }
 
 class Spaceship extends AGamePiece {
-  static int SPACESHIP_Y = -20; // change later, trying to set permanent Y
-  static int SPACESHIP_SPEED = 20; // change later, arbritrary number
-  static Color SPACESHIP_COLOR = Color.BLUE;
+  static final int SPACESHIP_Y = -20; // change later, trying to set permanent Y
+  static final int SPACESHIP_SPEED = 20; // change later, arbritrary number
+  static final Color SPACESHIP_COLOR = Color.BLUE;
+  static final int SPACESHIP_SIZE = 30;
   int speed;
+  boolean isTravelingRight;
 
-  Spaceship(int xpos, Color color, int size, int speed) {
-    super(new CartPt(xpos, SPACESHIP_Y), color, size);
+  Spaceship(int xpos, boolean isTravelingRight) {
+    super(new CartPt(xpos, SPACESHIP_Y), SPACESHIP_COLOR, SPACESHIP_SIZE);
     this.speed = SPACESHIP_SPEED;
+    this.isTravelingRight = isTravelingRight;
   }
 
   public IGamePiece move(int dx, int dy) {
-    return new Spaceship(super.loc.x + dx, super.color, super.size, this.speed);
+    return new Spaceship(super.loc.x + dx, this.isTravelingRight);
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
-    // corner
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
     RectangleImage ship = new RectangleImage(super.size * 2, super.size, OutlineMode.SOLID, super.color);
-    // places rectangle image on the board image, offset by the pieces loc from the
-    // pinhole
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, super.loc.x, super.loc.y, ship);
   }
 }
 
 class Invader extends AGamePiece {
 
-  static final Color DEFAULT_COLOR = Color.MAGENTA;
-  static final int DEFAULT_SIZE = 15;
+  static final Color INVADER_COLOR = Color.MAGENTA;
+  static final int INVADER_SIZE = 15;
 
   Invader(CartPt loc) {
-    super(loc, DEFAULT_COLOR, DEFAULT_SIZE);
+    super(loc, INVADER_COLOR, INVADER_SIZE);
   }
 
+  // Invaders canot move
   public IGamePiece move(int dx, int dy) {
-    return new Invader(new CartPt(super.loc.x + dx, super.loc.y + dy));
+    return this;
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
-    // corner
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
-    RectangleImage inv = new RectangleImage(DEFAULT_SIZE, DEFAULT_SIZE, OutlineMode.SOLID, super.color);
-    // places rectangle image on the board image, offset by the pieces loc from the
-    // pinhole
+    RectangleImage inv = new RectangleImage(INVADER_SIZE, INVADER_SIZE, OutlineMode.SOLID, super.color);
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, super.loc.x, super.loc.y, inv);
   }
 }
 
-// Stop Using
-class InvaderColumn {
-  // look at adding an int here to track the stack of invader rows
-  int column;
-  IList<Invader> invaders;
-
-  InvaderColumn(IList<Invader> invaders, int rank) {
-    this.invaders = invaders;
-    this.column = rank;
-  }
-}
-
 interface IBullet {
-  static int BULLET_SPEED = 5; // change later -----------
-  static int BULLET_SIZE = 5; // change later
+   // change later -----------
+  static final int BULLET_SIZE = 5; // change later
 
+  // creates a WorldImage to represent the bullet overlaid on the standard 600x600 board
   WorldImage draw();
+
+  // moves the bullet along its trajectory by updating the posn x and y basd on speed
+  IBullet updatePosn();
 }
 
 abstract class ABullet implements IBullet {
   CartPt position;
   int size;
   int speed;
+  Color color;
 
-  ABullet(CartPt position) {
+  ABullet(CartPt position, Color color, int speed) {
     this.position = position;
     this.size = BULLET_SIZE;
-    this.speed = BULLET_SPEED;
+    this.speed = speed;
+    this.color = color;
   }
 
   public WorldImage draw() {
-    // creates a rectangle outline of 600x600 and moves pinhole to bottom left
-    // corner
+    // creates a rectangle outline of 600x600 and moves pinhole to bottom left corner
     WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
-    RectangleImage bul = new RectangleImage(size, size, OutlineMode.SOLID, Color.RED);
-    // places rectangle image on the board image, offset by the pieces loc from the
-    // pinhole
+    RectangleImage bul = new RectangleImage(size, size, OutlineMode.SOLID, this.color);
+    // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, this.position.x, this.position.y, bul);
+  }
+
+  public IBullet updatePosn() {
+    int oldX = this.position.x;
+    int oldY = this.position.y;
+    return new SpaceshipBullet(new CartPt(oldX, oldY+this.speed));
   }
 }
 
 class SpaceshipBullet extends ABullet {
+  static final Color SPACESHIP_BUL_COLOR = Color.GREEN;
+  static final int SPACESHIP_BULLET_SPEED = -5; // -y is up in our chord space
 
   SpaceshipBullet(CartPt posn) {
-    super(posn);
+    super(posn, SPACESHIP_BUL_COLOR, SPACESHIP_BULLET_SPEED);
   }
-
 }
 
 class InvaderBullet extends ABullet {
+  static final Color INVADER_BUL_COLOR = Color.ORANGE;
+  static final int INVADER_BULLET_SPEED = 5; // +y is down in our chord space
 
   InvaderBullet(CartPt posn) {
-    super(posn);
+    super(posn, INVADER_BUL_COLOR, INVADER_BULLET_SPEED);
   }
 }
 
@@ -413,7 +415,7 @@ class ExamplesSpaceInvaders {
       new ConsList<IBullet>(IB2, new ConsList<IBullet>(SB1, new ConsList<IBullet>(SB2, new MtList<IBullet>()))));
 
   // spaceship example
-  Spaceship SP1 = new Spaceship(300, Color.RED, 15, 10);
+  Spaceship SP1 = new Spaceship(300, true);
 
   // invader CartPt's
   // Column_Row
