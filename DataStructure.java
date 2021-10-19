@@ -105,6 +105,22 @@ class ConsList<T> implements IList<T> {
   }
 }
 
+// converts an IList<Ilist<CartPt> into an IList<CartPt>
+class FlattenCartPtList implements BiFunction<IList<CartPt>, IList<CartPt>, IList<CartPt>> {
+
+  public IList<CartPt> apply(IList<CartPt> arg0, IList<CartPt> arg1) {
+    return arg0.fold(new AppendPtLists(), arg1);
+  }
+}
+
+// assists FlattenCartPtList by stitching one IList<CartPt> into another though ConsList<CartPt>
+class AppendPtLists implements BiFunction<CartPt, IList<CartPt>, IList<CartPt>> {
+
+  public IList<CartPt> apply(CartPt arg0, IList<CartPt> arg1) {
+    return new ConsList<CartPt>(arg0, arg1);
+  }
+}
+
 // assists andMap by returning true if either passed parameters are true
 class AndMapHelp implements BiFunction<Boolean, Boolean, Boolean> {
   public Boolean apply(Boolean current, Boolean acc) {
@@ -186,7 +202,7 @@ class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
 
   public IList<CartPt> apply(IList<Invader> t) {
     // distributes the max allowed shots evenly between each row 
-    return t.map(new MayFire(shotsAvailible/t.length()));
+    return t.map(new MayFire(shotsAvailible / t.length()));
   }
 }
 
@@ -200,7 +216,7 @@ class MayFire implements Function<Invader, CartPt> {
   public CartPt apply(Invader t) {
     // checks to see if any other shots are allowed, if so there is a 10% chance that the currently
     // evaluated invader's actual chords are returned, scaled for the origin of the bullet
-    if (shotsAvailible > 0 && (int)Math.random()*10 == 1) {
+    if (shotsAvailible > 0 && (int) Math.random() * 10 == 1) {
       // each shot decreasaes the ammount of shots availible by 1
       this.shotsAvailible--;
       return t.loc;
@@ -339,9 +355,9 @@ class Spaceship extends AGamePiece {
   // according to its current travel path. If the spaceship is at either boarder moving the direciton
   // into the border it will not be changed
   public Spaceship move() {
-    if (this.isTravelingRight == true && super.loc.x <= (600-super.size)){
+    if (this.isTravelingRight == true && super.loc.x <= (600 - super.size)) {
       return new Spaceship(super.loc.x + this.speed, this.isTravelingRight);
-    } else if (this.isTravelingRight == false && super.loc.x >= super.size){
+    } else if (this.isTravelingRight == false && super.loc.x >= super.size) {
       return new Spaceship(super.loc.x - this.speed, this.isTravelingRight);
     } else {
       return this;
@@ -391,7 +407,7 @@ class Invader extends AGamePiece {
 }
 
 interface IBullet {
-   // change later -----------
+  // change later -----------
   static final int BULLET_SIZE = 5; // change later
 
   // creates a WorldImage to represent the bullet overlaid on the standard 600x600 board
@@ -429,7 +445,7 @@ abstract class ABullet implements IBullet {
   public IBullet updatePosn() {
     int oldX = this.position.x;
     int oldY = this.position.y;
-    return new SpaceshipBullet(new CartPt(oldX, oldY+this.speed));
+    return new SpaceshipBullet(new CartPt(oldX, oldY + this.speed));
   }
 }
 

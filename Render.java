@@ -68,39 +68,13 @@ class WorldState extends World {
     // fold
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
-    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible)).fold((s1,s2)->new ConsList<CartPt>(s1, s2), new MtList<CartPt>()).filter(s->s.x != 999));
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible)).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
 
-  private IList<IBullet> buildFiredBullets(IList<IBullet> bullets2, IList<IList<CartPt>> filter) {
-    return null;
+  // converts an IList<CartPt> to an IList<IBullet> using the InvaderBullet constructior
+  private IList<IBullet> buildFiredBullets(IList<IBullet> bullets, IList<CartPt> newBulletsLocations) {
+    return newBulletsLocations.map(s->new InvaderBullet(s));
   }
-
-
-  // Not the best approch instead should map a mayFire() across the entire list which has
-  // a 0% chance when there are 0 bullets
-
-  /*
-  private IList<IBullet> randomFire(IList<IBullet> bullets) {
-    int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
-    int shotsToFire = (int)Math.random()*shotsAvailible;
-    return randomFireHelper(bullets, shotsToFire);
-  }
-
-  private IList<IBullet> randomFireHelper(IList<IBullet> bullets, int shotsToFire) {
-    if (shotsToFire == 0) {
-      return bullets;
-    } else {
-      int invRow = (int)Math.random()*this.invaders.length()-1;
-      CartPt randInvaderChords = randInvaderChordsOffset(this.invaders, invRow);
-      return randomFireHelper(new ConsList<IBullet>(new InvaderBullet(randInvaderChords), bullets), shotsToFire--);
-    }
-  }
-
-  private CartPt randInvaderChordsOffset(IList<IList<Invader>> invaders2, int invRow) {
-    return randInvaderChordsOffsetHelper();
-  } */
-
-  
 
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
