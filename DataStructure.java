@@ -203,9 +203,11 @@ class ChordMatch implements Predicate<CartPt> {
 
 class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
   int shotsAvailible;
+  int listLength;
 
-  MayFireList(int shotsAvailible) {
+  MayFireList(int shotsAvailible, int listLength) {
     this.shotsAvailible = shotsAvailible;
+    this.listLength = listLength;
   }
 
   public IList<CartPt> apply(IList<Invader> t) {

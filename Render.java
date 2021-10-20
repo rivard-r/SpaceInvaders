@@ -68,9 +68,9 @@ class WorldState extends World {
     // bullets. Found through tallying invader bullets with sumInvader and summing the total with
     // fold
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
-    System.out.println(shotsAvailible);
+    System.out.println(invaders.length());
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
-    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible/invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
 
   // converts an IList<CartPt> to an IList<IBullet> using the InvaderBullet constructior
