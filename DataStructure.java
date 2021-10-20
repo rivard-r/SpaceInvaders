@@ -333,6 +333,11 @@ interface IGamePiece {
 
   // draw this IGamePiece overlaid on a standard 600x600 board
   WorldImage draw();
+
+  boolean invBulletHit(int x, int y);
+
+  boolean ssBulletHit(int x, int y);
+
 }
 
 abstract class AGamePiece implements IGamePiece {
@@ -391,6 +396,52 @@ class Spaceship extends AGamePiece {
   public Spaceship goRight() {
     return new Spaceship(this.loc.x, true);
   }
+
+  // check if this spaceship is hit by the invader bullet with the passed coordinates
+  public boolean invBulletHit(int x, int y) {
+    return (y >= this.loc.y - (this.size / 2))
+        && x >= this.loc.x - (this.size)
+        && x <= this.loc.x + (this.size);
+  }
+  
+  // always returns false, a spaceship can't hit itself
+  public boolean ssBulletHit(int x, int y) {
+    return false;
+  }
+
+}
+
+// filter the list of list of invaders to get rid of dead invaders
+class FilterInvColumn implements Function<IList<Invader>, IList<Invader>> {
+  IList<IBullet> bullets;
+
+  FilterInvColumn(IList<IBullet> bullets) {
+    this.bullets = bullets;
+  } 
+  
+  public IList<Invader> apply(IList<Invader> i) {
+    return i.filter((inv) -> !bullets.orMap((b) -> b.checkHit(inv)));
+           // filter this list of invaders by whether any of the bullets
+           // have hit it. if none hit, bullets.orMap would return false,
+           // so the invader would be filtered out. the ! reverses this so
+           // the method works correctly, filtering out the invader 
+           // if bullets.orMap returns true.
+  }
+}
+
+// function t
+class BulInContact implements Predicate<IBullet> {
+  IList<IList<Invader>> invColumns;
+
+  BulInContact(IList<IList<Invader>> invColumns) {
+    this.invColumns = invColumns;
+  } 
+  @Override
+  public boolean test(IBullet b) {
+    return !invColumns.orMap((column) -> column.orMap((inv) -> b.checkHit(inv)));
+           // similar to above: filter out bullets if they have hit an invader in the
+           // list of invader columns.
+  }
 }
 
 class Invader extends AGamePiece {
@@ -414,6 +465,18 @@ class Invader extends AGamePiece {
     // places rectangle image on the board image, offset by the pieces loc from the pinhole
     return new OverlayOffsetImage(board, super.loc.x, super.loc.y, inv);
   }
+
+  // always returns false because invader can't hit invader
+  public boolean invBulletHit(int x, int y) {
+    return false;
+  }
+
+  public boolean ssBulletHit(int x, int y) {
+    return y <= this.loc.y + (INVADER_SIZE / 2) 
+        && (this.loc.x - INVADER_SIZE / 2) <= x
+        && x <= (this.loc.x + INVADER_SIZE / 2);
+  }
+
 }
 
 interface IBullet {
@@ -433,6 +496,9 @@ interface IBullet {
   // returns true if the bullet's position CartPt has a x between 0 and 600 and
   // a y between 0 and -600
   boolean inBounds();
+
+  boolean checkHit(IGamePiece gp);
+
 }
 
 abstract class ABullet implements IBullet {
@@ -476,6 +542,10 @@ class SpaceshipBullet extends ABullet {
     return 0;
   }
 
+  public boolean checkHit(IGamePiece gp) {
+    return gp.ssBulletHit(this.position.x, this.position.y);
+  }
+
   public SpaceshipBullet updatePosn() {
     int oldX = this.position.x;
     int oldY = this.position.y;
@@ -493,6 +563,10 @@ class InvaderBullet extends ABullet {
 
   public int sumInvader() {
     return 1;
+  }
+
+  public boolean checkHit(IGamePiece gp) {
+    return gp.invBulletHit(this.position.x, this.position.y);
   }
 
   public InvaderBullet updatePosn() {
@@ -514,12 +588,28 @@ class ExamplesSpaceInvaders {
   IBullet IB2 = new InvaderBullet(B1_2);
   IBullet SB1 = new SpaceshipBullet(B2_1);
   IBullet SB2 = new SpaceshipBullet(B2_2);
+  IBullet bHit1 = new SpaceshipBullet(new CartPt(100, -300));
+  IBullet bHit2 = new SpaceshipBullet(new CartPt(400, -300));
+
+  IBullet ssSelfHit = new SpaceshipBullet(new CartPt(300, -15));
+  IBullet invSelfHit = new InvaderBullet(new CartPt(100, -300));
+
 
   IList<IBullet> CompleteBullets = new ConsList<IBullet>(IB1,
       new ConsList<IBullet>(IB2, new ConsList<IBullet>(SB1, new ConsList<IBullet>(SB2, new MtList<IBullet>()))));
 
+  IList<IBullet> CompleteBulletsHit = new ConsList<IBullet>(IB1, new ConsList<IBullet>(IB2,
+      new ConsList<IBullet>(SB1, new ConsList<IBullet>(SB2,
+          new ConsList<IBullet>(this.bHit1, new ConsList<IBullet>(this.bHit2, new MtList<IBullet>()))))));
+                  
+  IList<IBullet> bullets2Hit = new ConsList<IBullet>(this.bHit1, new ConsList<IBullet>(this.bHit2, new MtList<IBullet>()));
+
+
   // spaceship example
   Spaceship SP1 = new Spaceship(300, true);
+  Spaceship SS1 = new Spaceship(300, true);
+  Spaceship SwordfishII = new Spaceship(126, false);
+
 
   // invader CartPt's
   // Column_Row
@@ -604,6 +694,9 @@ class ExamplesSpaceInvaders {
   IList<Invader> InvL1 = new ConsList<Invader>(this.Inv1_1,
       new ConsList<Invader>(this.Inv1_2, new ConsList<Invader>(this.Inv1_3, new MtList<Invader>())));
 
+  IList<Invader> InvL1Hit = new ConsList<Invader>(this.Inv1_1, new ConsList<Invader>(this.Inv1_2,
+      new MtList<Invader>()));
+
   IList<Invader> InvL2 = new ConsList<Invader>(this.Inv2_1,
       new ConsList<Invader>(this.Inv2_2, new ConsList<Invader>(this.Inv2_3, new MtList<Invader>())));
 
@@ -621,6 +714,9 @@ class ExamplesSpaceInvaders {
 
   IList<Invader> InvL7 = new ConsList<Invader>(this.Inv7_1,
       new ConsList<Invader>(this.Inv7_2, new ConsList<Invader>(this.Inv7_3, new MtList<Invader>())));
+  
+  IList<Invader> InvL7Hit = new ConsList<Invader>(this.Inv7_1, new ConsList<Invader>(this.Inv7_2,
+      new MtList<Invader>()));
 
   IList<Invader> InvL8 = new ConsList<Invader>(this.Inv8_1,
       new ConsList<Invader>(this.Inv8_2, new ConsList<Invader>(this.Inv8_3, new MtList<Invader>())));
@@ -636,6 +732,15 @@ class ExamplesSpaceInvaders {
                       new ConsList<IList<Invader>>(InvL6,
                           new ConsList<IList<Invader>>(InvL7, new ConsList<IList<Invader>>(InvL8,
                               new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
+
+  IList<IList<Invader>> CompleteInvaders2Hit = new ConsList<IList<Invader>>(InvL1Hit,
+    new ConsList<IList<Invader>>(InvL2,
+        new ConsList<IList<Invader>>(InvL3,
+            new ConsList<IList<Invader>>(InvL4,
+                new ConsList<IList<Invader>>(InvL5, new ConsList<IList<Invader>>(InvL6,
+                    new ConsList<IList<Invader>>(InvL7Hit, new ConsList<IList<Invader>>(InvL8,
+                        new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
+                        
 
   public boolean testDraw(Tester t) {
     WorldImage board = new RectangleImage(600, 600, "outline", Color.black).movePinhole(-300, 300);
@@ -678,5 +783,60 @@ class ExamplesSpaceInvaders {
    * double tickRate = 0; return world.bigBang(worldWidth, worldHeight, tickRate);
    * }
    */
+
+  public boolean testInvBulletHit(Tester t) {
+    return t.checkExpect(this.SS1.invBulletHit(300, -5), true)
+        && t.checkExpect(this.SS1.invBulletHit(270, -30), true)
+        && t.checkExpect(this.SS1.invBulletHit(269, -30), false)
+        && t.checkExpect(this.SS1.invBulletHit(331, -30), false)
+        && t.checkExpect(this.Inv1_1.invBulletHit(100, -515), false);
+  }
+  
+  public boolean testSsBulletHit(Tester t) {
+    return t.checkExpect(this.SS1.ssBulletHit(300, -5), false)
+        && t.checkExpect(this.Inv1_1.ssBulletHit(100, -485), true)
+        && t.checkExpect(this.Inv1_1.ssBulletHit(100, -530), true)
+        && t.checkExpect(this.Inv1_1.ssBulletHit(100, -484), false);
+  }
+
+  //test Functions
+  public boolean testApply(Tester t) {
+    //test FilterInvColumn
+    return t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBulletsHit)),
+        this.CompleteInvaders2Hit)
+        && t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBullets)),
+            this.CompleteInvaders);
+        //test others
+  }
+  
+  public boolean testTest(Tester t) {
+    //test BulInContact
+    return t.checkExpect(this.bullets2Hit.filter(new BulInContact(this.CompleteInvaders)),
+            new MtList<IBullet>())
+        && t.checkExpect(this.CompleteBulletsHit.filter(new BulInContact(this.CompleteInvaders)),
+           this.CompleteBullets)
+        && t.checkExpect(this.CompleteBullets.filter(new BulInContact(this.CompleteInvaders)),
+            this.CompleteBullets);
+  }
+  
+  public boolean testCheckHit(Tester t) {
+    //test FilterInvColumn
+    return t.checkExpect(this.bHit1.checkHit(this.Inv1_3), true)
+        && t.checkExpect(this.bHit2.checkHit(this.Inv7_3), true)
+        && t.checkExpect(this.SB1.checkHit(this.Inv7_3), false)
+        && t.checkExpect(this.ssSelfHit.checkHit(this.SS1), false)
+        && t.checkExpect(this.invSelfHit.checkHit(this.Inv1_3), false);
+  }
+  
+  public boolean testOrMap(Tester t) {
+    // test FilterInvColumn
+    return t.checkExpect(this.InvL1.orMap((inv) -> this.bHit1.checkHit(inv)), true)
+        && t.checkExpect(this.InvL1.orMap((inv) -> this.SB1.checkHit(inv)), false)
+        && t.checkExpect(this.InvL7.orMap((inv) -> this.bHit2.checkHit(inv)), true)
+        && t.checkExpect(
+            this.CompleteInvaders.orMap((col) -> col.orMap((inv) -> (this.bHit1.checkHit(inv)))),
+            true);
+  }
+
 
 }

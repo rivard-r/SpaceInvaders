@@ -41,14 +41,17 @@ class WorldState extends World {
     this.gameOver = gameOver; // added this for easy endgame check
   }
   
-  /*
+  
   public WorldState resolveEvents() {
+    IList<IList<Invader>> invList = invaders;
     return new WorldState(
-        this.invaders.filter(new InvInContact(this.bullets)), // ended up doing bullet and 
+        this.invaders.map(new FilterInvColumn(this.bullets)),
         this.spaceship,
-        this.bullets.filter(new BulInContact(this.invaders)), // invader checks separately
-        this.bullets.orMap(new InSSHitRange(this.spaceship)));
-  }*/
+        this.bullets.filter(new BulInContact(invList)),
+        //this.invaders.allDead() || // <--- need to implement this -----------
+        this.bullets.orMap((b) -> b.checkHit(this.spaceship)));
+
+  }
 
   // produces a new world following on tick game rule behavior of motion for all IGamePieces, 
   // ignores all collision and game ending events
@@ -81,7 +84,7 @@ class WorldState extends World {
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
     if (key.equals(" ")){
-      return new WorldState(this.invaders, this.spaceship, new ConsList<IBullet>(spaceshipFire(), this.bullets), this.gameOver);
+      return new WorldState(this.invaders, this.spaceship, spaceshipFire(), this.gameOver);
     } else if (key.equals("left")) {
       return new WorldState(this.invaders, this.spaceship.goLeft(), this.bullets, this.gameOver); 
     } else if (key.equals("right")) {
@@ -92,10 +95,18 @@ class WorldState extends World {
   }
   
   // returns a new SpaceshipBullet at the top center of the this spaceship's outline
-  private IBullet spaceshipFire() {
+  private IList<IBullet> spaceshipFire() {
+    if (this.bullets.length() - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0) < 3) {
+      return spaceshipFireHelper();
+    } else {
+      return this.bullets;
+    }
+  }
+  // returns a new SpaceshipBullet at the top center of the this spaceship's outline
+  private IList<IBullet> spaceshipFireHelper() {
     int shipX = this.spaceship.loc.x;
     int shipY = this.spaceship.loc.y - this.spaceship.size/2;
-    return new SpaceshipBullet(new CartPt(shipX, shipY));
+    return new ConsList<IBullet>(new SpaceshipBullet(new CartPt(shipX, shipY)), this.bullets);
   }
 
   public WorldScene makeScene() {
@@ -128,7 +139,7 @@ class WorldState extends World {
       return this;
     } else {
       // add .resolveEvents() here when ready
-    return this.updateWorld();
+    return this.updateWorld().resolveEvents();
     }
   }
 
