@@ -201,13 +201,15 @@ class ChordMatch implements Predicate<CartPt> {
   }
 }
 
+// 
 class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
-  int shotsAvailible;
+  IList<IBullet> bullets;
+  int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
   int listLength;
 
-  MayFireList(int shotsAvailible, int listLength) {
-    this.shotsAvailible = shotsAvailible;
+  MayFireList(int shotsAvailible, int listLength, IList<IBullet> bullets) {
     this.listLength = listLength;
+    this.bullets = bullets;
   }
 
   public IList<CartPt> apply(IList<Invader> t) {
@@ -218,6 +220,7 @@ class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
 
 class MayFire implements Function<Invader, CartPt> {
   int shotsAvailible;
+  int shotsFired = 0;
 
   MayFire(int shotsAvailible) {
     this.shotsAvailible = shotsAvailible;
@@ -226,12 +229,12 @@ class MayFire implements Function<Invader, CartPt> {
   public CartPt apply(Invader t) {
     // checks to see if any other shots are allowed, if so there is a 10% chance that the currently
     // evaluated invader's actual chords are returned, scaled for the origin of the bullet
-    if (shotsAvailible > 0 && ((int)(Math.random() * 10)) == 1) {
+    if (shotsAvailible > shotsFired && ((int)(Math.random() * 10)) == 1) {
       // each shot decreasaes the ammount of shots availible by 1
-      this.shotsAvailible--;
+      this.shotsFired++;
       return t.loc;
     } else {
-      // if no shots are availible or the chance is not hit, a dummy value of 999 is used filter out 
+      // if no shots are availible or the chance is not hit, a dummy value of 999 is used to filter out 
       // misses
       return new CartPt(999, 999);
     }
@@ -583,11 +586,15 @@ class ExamplesSpaceInvaders {
   CartPt B1_2 = new CartPt(200, -350);
   CartPt B2_1 = new CartPt(450, -100);
   CartPt B2_2 = new CartPt(100, -150);
+  CartPt B_Bounds1 = new CartPt(50, -601);
+  CartPt B_Bounds2 = new CartPt(50, 1);
 
   IBullet IB1 = new InvaderBullet(B1_1);
   IBullet IB2 = new InvaderBullet(B1_2);
   IBullet SB1 = new SpaceshipBullet(B2_1);
   IBullet SB2 = new SpaceshipBullet(B2_2);
+  IBullet IB_Bounds = new SpaceshipBullet(B_Bounds2);
+  IBullet SB_Bounds = new SpaceshipBullet(B_Bounds1);
   IBullet bHit1 = new SpaceshipBullet(new CartPt(100, -300));
   IBullet bHit2 = new SpaceshipBullet(new CartPt(400, -300));
 
@@ -648,6 +655,14 @@ class ExamplesSpaceInvaders {
   CartPt IP9_1 = new CartPt(500, -500);
   CartPt IP9_2 = new CartPt(500, -400);
   CartPt IP9_3 = new CartPt(500, -300);
+
+  IList<CartPt> cartPtTest1 = new ConsList<CartPt>(IP1_1, new ConsList<CartPt>(IP1_2,
+  new ConsList<CartPt>(IP1_3, new MtList<CartPt>())));
+  IList<CartPt> cartPtTest2 = new ConsList<CartPt>(IP2_1, new ConsList<CartPt>(IP2_2,
+  new ConsList<CartPt>(IP2_3, new MtList<CartPt>())));
+  IList<CartPt> cartPtTest1_2 = new ConsList<CartPt>(IP1_1, new ConsList<CartPt>(IP1_2,
+  new ConsList<CartPt>(IP1_3, new ConsList<CartPt>(IP2_1, new ConsList<CartPt>(IP2_2,
+  new ConsList<CartPt>(IP2_3, new MtList<CartPt>()))))));
 
   // invaders
   Invader Inv1_1 = new Invader(this.IP1_1);
@@ -751,13 +766,15 @@ class ExamplesSpaceInvaders {
 
   // TEST FOR FULL GAME
 
+  /*
   boolean testBigBang(Tester t) {
-    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, false);
+    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, 0);
+    //WorldState world = new WorldState(new MakeListOfColumns().apply(9), SP1, new MtList<IBullet>(), 0);
     int worldWidth = 600;
     int worldHeight = 600;
     double tickRate = 0.02;
     return world.bigBang(worldWidth, worldHeight, tickRate);
-  }
+  }*/
 
   // test the method ChordMatch and orMap
   public boolean testChordMatch(Tester t) {
@@ -794,7 +811,7 @@ class ExamplesSpaceInvaders {
   
   public boolean testSsBulletHit(Tester t) {
     return t.checkExpect(this.SS1.ssBulletHit(300, -5), false)
-        && t.checkExpect(this.Inv1_1.ssBulletHit(100, -485), true)
+        && t.checkExpect(this.Inv1_1.ssBulletHit(100, -485), false)
         && t.checkExpect(this.Inv1_1.ssBulletHit(100, -530), true)
         && t.checkExpect(this.Inv1_1.ssBulletHit(100, -484), false);
   }
@@ -837,6 +854,40 @@ class ExamplesSpaceInvaders {
             this.CompleteInvaders.orMap((col) -> col.orMap((inv) -> (this.bHit1.checkHit(inv)))),
             true);
   }
+  /*
+  public boolean testWinner(Tester t) {
+    return t.checkExpect(this.wsInvEmpty.winner(), 1)
+        && t.checkExpect(this.wsSSHit.winner(), -1)
+        && t.checkExpect(this.ws1.winner(), 0);
+*/
+  public boolean testPointsEqual(Tester t) {
+    return t.checkExpect(new PointsEqual(IP1_1).test(IP1_1), true) &&
+           t.checkExpect(new PointsEqual(IP1_1).test(IP1_2), false) &&
+           t.checkExpect(new PointsEqual(IP1_2).test(IP2_2), false);
+  }
 
+  public boolean testBulletToImage(Tester t) {
+    WorldImage board = new RectangleImage(600, 600, OutlineMode.OUTLINE, Color.BLACK).movePinhole(-300, 300);
+    return t.checkExpect(new BulletToImage().apply(IB1), new OverlayOffsetImage(board, 150, -550, new RectangleImage(5, 5, OutlineMode.SOLID, Color.ORANGE)));
+  }
+
+  public boolean testAppendPtLists(Tester t) {
+    return t.checkExpect(new AppendPtLists().apply(IP2_1, cartPtTest1), new ConsList<CartPt>(IP2_1, new ConsList<CartPt>(IP1_1,
+          new ConsList<CartPt>(IP1_2, new ConsList<CartPt>(IP1_3, new MtList<CartPt>()))))) &&
+          t.checkExpect(new AppendPtLists().apply(IP2_1, new MtList<CartPt>()), new ConsList<CartPt>(IP2_1, new MtList<CartPt>())); 
+  }
+
+  public boolean testSumInvader(Tester t) { 
+    return t.checkExpect(IB1.sumInvader(), 1) &&
+          t.checkExpect(SB1.sumInvader(), 0);
+  }
+
+  public boolean testInBounds(Tester t) {
+    return t.checkExpect(IB1.inBounds(), true) &&
+           t.checkExpect(SB1.inBounds(), true) &&
+           t.checkExpect(IB_Bounds.inBounds(), false) &&
+           t.checkExpect(SB_Bounds.inBounds(), false);
+  }
+  
 
 }

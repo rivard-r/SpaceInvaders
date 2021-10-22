@@ -28,28 +28,29 @@ class TestWorldState extends World {
   }
 }
 
+// Represents the current world and contains all data relevent to generate the world
 class WorldState extends World {
   IList<IList<Invader>> invaders;
   Spaceship spaceship;
   IList<IBullet> bullets;
-  boolean gameOver; //added this for easy endgame check
+  int whoWon; //added this for easy endgame check
 
-  WorldState(IList<IList<Invader>> invaders, Spaceship spaceship, IList<IBullet> bullets, boolean gameOver) {
+  WorldState(IList<IList<Invader>> invaders, Spaceship spaceship, IList<IBullet> bullets, int whoWon) {
     this.invaders = invaders; //list of list of IGamePiece
     this.spaceship = spaceship;
     this.bullets = bullets; // list of IGamePiece
-    this.gameOver = gameOver; // added this for easy endgame check
+    this.whoWon = whoWon; // added this for easy endgame check
   }
   
-  
+  // process any game rules involving overlaps and invader generation assumes
+  // movement for this tick has already resolved  
   public WorldState resolveEvents() {
     IList<IList<Invader>> invList = invaders;
     return new WorldState(
         this.invaders.map(new FilterInvColumn(this.bullets)),
         this.spaceship,
         this.bullets.filter(new BulInContact(invList)),
-        //this.invaders.allDead() || // <--- need to implement this -----------
-        this.bullets.orMap((b) -> b.checkHit(this.spaceship)));
+        this.winner());
 
   }
 
@@ -60,8 +61,23 @@ class WorldState extends World {
       this.invaders,
       this.spaceship.move(), 
       randomFire(this.bullets).map(s->s.updatePosn()).filter(s->s.inBounds()),
-      this.gameOver);
+      this.whoWon);
   }
+
+  // determines if the game has been won or lost. checks if all invader columns are empty; if yes,
+  // user won. otherwise, checks if the spaceship has been hit. if yes, invaders won. otherwise
+  // returns 0.
+  // 1 = Spaceship won, -1 = invaders won, 0 = ongoing
+  public int winner() {
+    if (this.invaders.andMap((invCol) -> (invCol.length() == 0))) {
+      return 1;
+    }
+    else if (this.bullets.orMap((b) -> b.checkHit(this.spaceship))) {
+      return -1;
+    }
+    else return 0;
+  }
+
 
   // generates a random number of shots to fire on this tick cycle that is within the 10 shot
   // maximum and passes this number to randomFireHelper
@@ -71,9 +87,9 @@ class WorldState extends World {
     // bullets. Found through tallying invader bullets with sumInvader and summing the total with
     // fold
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
-    System.out.println(invaders.length());
+    System.out.println(shotsAvailible);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
-    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length(), bullets)).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
 
   // converts an IList<CartPt> to an IList<IBullet> using the InvaderBullet constructior
@@ -84,11 +100,11 @@ class WorldState extends World {
   // handle player input of space, left, and right arrow keys
   public World onKeyEvent(String key) {
     if (key.equals(" ")){
-      return new WorldState(this.invaders, this.spaceship, spaceshipFire(), this.gameOver);
+      return new WorldState(this.invaders, this.spaceship, spaceshipFire(), this.whoWon);
     } else if (key.equals("left")) {
-      return new WorldState(this.invaders, this.spaceship.goLeft(), this.bullets, this.gameOver); 
+      return new WorldState(this.invaders, this.spaceship.goLeft(), this.bullets, this.whoWon); 
     } else if (key.equals("right")) {
-      return new WorldState(this.invaders, this.spaceship.goRight(), this.bullets, this.gameOver);
+      return new WorldState(this.invaders, this.spaceship.goRight(), this.bullets, this.whoWon);
     } else {
       return this;
     }
@@ -132,10 +148,13 @@ class WorldState extends World {
 
   // every tick run through the movment game rules and bullet generation using 
   // updateWorld() then check for any bullet-gamePiece overlap with resolveEvents()
-  // and modify the world accordingly 
+  // and modify the world accordingly, also end the game if whoWon has been set from 0
   public World onTick() {
-    if (this.gameOver) {
+    if (this.whoWon == -1) {
       this.endOfWorld("Game Over");
+      return this;
+    } else if (this.whoWon == 1) {
+      this.endOfWorld("You Won");
       return this;
     } else {
       // add .resolveEvents() here when ready
