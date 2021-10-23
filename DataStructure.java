@@ -203,13 +203,12 @@ class ChordMatch implements Predicate<CartPt> {
 
 // 
 class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
-  IList<IBullet> bullets;
-  int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
+  int shotsAvailible;
   int listLength;
 
-  MayFireList(int shotsAvailible, int listLength, IList<IBullet> bullets) {
+  MayFireList(int shotsAvailible, int listLength) {
     this.listLength = listLength;
-    this.bullets = bullets;
+    this.shotsAvailible = shotsAvailible;
   }
 
   public IList<CartPt> apply(IList<Invader> t) {
@@ -263,7 +262,7 @@ class MakeCartPt implements BiFunction<Integer, Integer, CartPt> {
     int baseX = 100;
     int baseY = -500;
     int numCol = 9;
-    int numRow = 3;
+    int numRow = 4;
     return new CartPt(baseX + ((numCol - col) * 50), baseY + ((numRow - row) * 100));
   }
 }
@@ -278,9 +277,10 @@ class MakeInvader implements BiFunction<Integer, Integer, Invader> {
 
 //make list of invaders
 class MakeInvaderList implements Function<Integer, IList<Invader>> {
+  int COL_LENGTH = 4;
 
   public IList<Invader> apply(Integer col) {
-    return (new Utils().buildListBi(new MakeInvader(), col, 3));
+    return (new Utils().buildListBi(new MakeInvader(), col, COL_LENGTH));
   }
 }
 
@@ -748,6 +748,7 @@ class ExamplesSpaceInvaders {
                           new ConsList<IList<Invader>>(InvL7, new ConsList<IList<Invader>>(InvL8,
                               new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
 
+
   IList<IList<Invader>> CompleteInvaders2Hit = new ConsList<IList<Invader>>(InvL1Hit,
     new ConsList<IList<Invader>>(InvL2,
         new ConsList<IList<Invader>>(InvL3,
@@ -784,12 +785,14 @@ class ExamplesSpaceInvaders {
 
   //test the method MakeInvaders and the function classes MakeListOfColumns, 
   // MakeInvaderList, MakeInvader, and MakeCartPt
+  /*
   public boolean testMakeInvaders(Tester t) {
-    return t.checkExpect(new Utils().makeInvaders(9), this.CompleteInvaders)
-        && t.checkExpect(new Utils().makeInvaders(1),
-            new ConsList<IList<Invader>>(this.InvL9, new MtList<IList<Invader>>()))
-        && t.checkExpect(new Utils().makeInvaders(0), new MtList<Invader>());
-  }
+    return t.checkExpect(new Utils().makeInvaders(9), this.CompleteInvaders2)
+      && t.checkExpect(new Utils().makeInvaders(1),
+        new ConsList<IList<Invader>>(this.InvL9B, new MtList<IList<Invader>>()))
+      && t.checkExpect(new Utils().makeInvaders(0), new MtList<Invader>());
+
+  }*/
 
   // TEST FOR INDIVIDUAL LISTS OF OBJECTS
   /*
@@ -888,6 +891,20 @@ class ExamplesSpaceInvaders {
            t.checkExpect(IB_Bounds.inBounds(), false) &&
            t.checkExpect(SB_Bounds.inBounds(), false);
   }
-  
 
+  public boolean testLength(Tester t) {
+    return t.checkExpect(CompleteInvaders2Hit.length(), 9) &&
+          t.checkExpect(new MtList().length(), 0) &&
+          t.checkExpect(InvL2.length(), 3); 
+  }
+
+  public boolean testInvaderListToImageList(Tester t) {
+    return t.checkExpect(new InvaderListToImageList().apply(InvL1),
+            new ConsList<WorldImage>(this.Inv1_1.draw(), new ConsList<WorldImage>(this.Inv1_2.draw(),
+            new ConsList<WorldImage>(this.Inv1_3.draw(), new MtList<WorldImage>())))) &&
+          t.checkExpect(new MtList<Invader>(), new MtList<WorldImage>());
+  }
+
+  
+  
 }

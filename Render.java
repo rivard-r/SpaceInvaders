@@ -89,7 +89,7 @@ class WorldState extends World {
     int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
     System.out.println(shotsAvailible);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
-    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length(), bullets)).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
+    return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
   }
 
   // converts an IList<CartPt> to an IList<IBullet> using the InvaderBullet constructior
@@ -164,6 +164,6 @@ class WorldState extends World {
 
   // required by this.endOfWorld
   public WorldScene lastScene(String msg) {
-    return this.makeScene().placeImageXY(new TextImage(msg, Color.BLACK), 0, 0);
+    return this.makeScene().placeImageXY(new TextImage(msg, Color.BLACK), 300, 300);
   }
 }
