@@ -5,7 +5,6 @@ import tester.*;
 import javalib.worldimages.*;
 import java.awt.Color;
 import javalib.funworld.*;
-import javalib.impworld.WorldScene;
 
 interface IList<T> {
 
@@ -601,6 +600,7 @@ class ExamplesSpaceInvaders {
 
   IBullet ssSelfHit = new SpaceshipBullet(new CartPt(300, -15));
   IBullet invSelfHit = new InvaderBullet(new CartPt(100, -300));
+  IBullet ssHit = new InvaderBullet(new CartPt(300, -15));
 
 
   IList<IBullet> CompleteBullets = new ConsList<IBullet>(IB1,
@@ -624,38 +624,48 @@ class ExamplesSpaceInvaders {
   CartPt IP1_1 = new CartPt(100, -500);
   CartPt IP1_2 = new CartPt(100, -400);
   CartPt IP1_3 = new CartPt(100, -300);
+  CartPt IP1_4 = new CartPt(100, -200);
 
   CartPt IP2_1 = new CartPt(150, -500);
   CartPt IP2_2 = new CartPt(150, -400);
   CartPt IP2_3 = new CartPt(150, -300);
+  CartPt IP2_4 = new CartPt(150, -200);
 
   CartPt IP3_1 = new CartPt(200, -500);
   CartPt IP3_2 = new CartPt(200, -400);
   CartPt IP3_3 = new CartPt(200, -300);
+  CartPt IP3_4 = new CartPt(200, -200);
 
   CartPt IP4_1 = new CartPt(250, -500);
   CartPt IP4_2 = new CartPt(250, -400);
   CartPt IP4_3 = new CartPt(250, -300);
+  CartPt IP4_4 = new CartPt(250, -200);
 
   CartPt IP5_1 = new CartPt(300, -500);
   CartPt IP5_2 = new CartPt(300, -400);
   CartPt IP5_3 = new CartPt(300, -300);
+  CartPt IP5_4 = new CartPt(300, -200);
 
   CartPt IP6_1 = new CartPt(350, -500);
   CartPt IP6_2 = new CartPt(350, -400);
   CartPt IP6_3 = new CartPt(350, -300);
+  CartPt IP6_4 = new CartPt(350, -200);
 
   CartPt IP7_1 = new CartPt(400, -500);
   CartPt IP7_2 = new CartPt(400, -400);
   CartPt IP7_3 = new CartPt(400, -300);
+  CartPt IP7_4 = new CartPt(400, -200);
+
 
   CartPt IP8_1 = new CartPt(450, -500);
   CartPt IP8_2 = new CartPt(450, -400);
   CartPt IP8_3 = new CartPt(450, -300);
+  CartPt IP8_4 = new CartPt(450, -200);
 
   CartPt IP9_1 = new CartPt(500, -500);
   CartPt IP9_2 = new CartPt(500, -400);
   CartPt IP9_3 = new CartPt(500, -300);
+  CartPt IP9_4 = new CartPt(500, -200);
 
   IList<CartPt> cartPtTest1 = new ConsList<CartPt>(IP1_1, new ConsList<CartPt>(IP1_2,
   new ConsList<CartPt>(IP1_3, new MtList<CartPt>())));
@@ -669,44 +679,102 @@ class ExamplesSpaceInvaders {
   Invader Inv1_1 = new Invader(this.IP1_1);
   Invader Inv1_2 = new Invader(this.IP1_2);
   Invader Inv1_3 = new Invader(this.IP1_3);
+  Invader Inv1_4 = new Invader(this.IP1_4);
+
 
   Invader Inv2_1 = new Invader(this.IP2_1);
   Invader Inv2_2 = new Invader(this.IP2_2);
   Invader Inv2_3 = new Invader(this.IP2_3);
+  Invader Inv2_4 = new Invader(this.IP2_4);
+
 
   Invader Inv3_1 = new Invader(this.IP3_1);
   Invader Inv3_2 = new Invader(this.IP3_2);
   Invader Inv3_3 = new Invader(this.IP3_3);
+  Invader Inv3_4 = new Invader(this.IP3_4);
 
   Invader Inv4_1 = new Invader(this.IP4_1);
   Invader Inv4_2 = new Invader(this.IP4_2);
   Invader Inv4_3 = new Invader(this.IP4_3);
+  Invader Inv4_4 = new Invader(this.IP4_4);
 
   Invader Inv5_1 = new Invader(this.IP5_1);
   Invader Inv5_2 = new Invader(this.IP5_2);
   Invader Inv5_3 = new Invader(this.IP5_3);
+  Invader Inv5_4 = new Invader(this.IP5_4);
 
   Invader Inv6_1 = new Invader(this.IP6_1);
   Invader Inv6_2 = new Invader(this.IP6_2);
   Invader Inv6_3 = new Invader(this.IP6_3);
+  Invader Inv6_4 = new Invader(this.IP6_4);
+
 
   Invader Inv7_1 = new Invader(this.IP7_1);
   Invader Inv7_2 = new Invader(this.IP7_2);
   Invader Inv7_3 = new Invader(this.IP7_3);
+  Invader Inv7_4 = new Invader(this.IP7_4);
+
 
   Invader Inv8_1 = new Invader(this.IP8_1);
   Invader Inv8_2 = new Invader(this.IP8_2);
   Invader Inv8_3 = new Invader(this.IP8_3);
+  Invader Inv8_4 = new Invader(this.IP8_4);
 
   Invader Inv9_1 = new Invader(this.IP9_1);
   Invader Inv9_2 = new Invader(this.IP9_2);
   Invader Inv9_3 = new Invader(this.IP9_3);
+  Invader Inv9_4 = new Invader(this.IP9_4);
+
+
 
   IList<CartPt> CPList1 = new ConsList<CartPt>(this.IP1_1,
       new ConsList<CartPt>(this.IP1_2, new ConsList<CartPt>(this.IP1_3, new MtList<CartPt>())));
   IList<CartPt> CPList2 = new ConsList<CartPt>(this.IP3_2,
       new ConsList<CartPt>(this.IP3_3, new ConsList<CartPt>(this.IP3_1, new MtList<CartPt>())));
 
+
+  IList<Invader> InvL1B = new ConsList<Invader>(this.Inv1_1,
+      new ConsList<Invader>(this.Inv1_2, new ConsList<Invader>(this.Inv1_3,
+          new ConsList<Invader>(this.Inv1_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL1HitB = new ConsList<Invader>(this.Inv1_1, new ConsList<Invader>(this.Inv1_2,
+      new ConsList<Invader>(this.Inv1_4, new MtList<Invader>())));
+
+  IList<Invader> InvL2B = new ConsList<Invader>(this.Inv2_1,
+      new ConsList<Invader>(this.Inv2_2, new ConsList<Invader>(this.Inv2_3,
+          new ConsList<Invader>(this.Inv2_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL3B = new ConsList<Invader>(this.Inv3_1,
+      new ConsList<Invader>(this.Inv3_2, new ConsList<Invader>(this.Inv3_3,
+          new ConsList<Invader>(this.Inv3_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL4B = new ConsList<Invader>(this.Inv4_1,
+      new ConsList<Invader>(this.Inv4_2, new ConsList<Invader>(this.Inv4_3,
+          new ConsList<Invader>(this.Inv4_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL5B = new ConsList<Invader>(this.Inv5_1,
+      new ConsList<Invader>(this.Inv5_2, new ConsList<Invader>(this.Inv5_3,
+          new ConsList<Invader>(this.Inv5_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL6B = new ConsList<Invader>(this.Inv6_1,
+      new ConsList<Invader>(this.Inv6_2, new ConsList<Invader>(this.Inv6_3,
+          new ConsList<Invader>(this.Inv6_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL7B = new ConsList<Invader>(this.Inv7_1,
+      new ConsList<Invader>(this.Inv7_2, new ConsList<Invader>(this.Inv7_3,
+          new ConsList<Invader>(this.Inv7_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL7HitB = new ConsList<Invader>(this.Inv7_1,
+      new ConsList<Invader>(this.Inv7_2, new MtList<Invader>()));
+
+  IList<Invader> InvL8B = new ConsList<Invader>(this.Inv8_1,
+      new ConsList<Invader>(this.Inv8_2, new ConsList<Invader>(this.Inv8_3,
+          new ConsList<Invader>(this.Inv8_4, new MtList<Invader>()))));
+
+  IList<Invader> InvL9B = new ConsList<Invader>(this.Inv9_1,
+      new ConsList<Invader>(this.Inv9_2, new ConsList<Invader>(this.Inv9_3,
+          new ConsList<Invader>(this.Inv9_4, new MtList<Invader>()))));
+  
   IList<Invader> InvL1 = new ConsList<Invader>(this.Inv1_1,
       new ConsList<Invader>(this.Inv1_2, new ConsList<Invader>(this.Inv1_3, new MtList<Invader>())));
 
@@ -749,6 +817,13 @@ class ExamplesSpaceInvaders {
                           new ConsList<IList<Invader>>(InvL7, new ConsList<IList<Invader>>(InvL8,
                               new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
 
+  IList<IList<Invader>> CompleteInvaders2 = new ConsList<IList<Invader>>(InvL1B,
+      new ConsList<IList<Invader>>(InvL2B,
+          new ConsList<IList<Invader>>(InvL3B, new ConsList<IList<Invader>>(InvL4B,
+              new ConsList<IList<Invader>>(InvL5B, new ConsList<IList<Invader>>(InvL6B,
+                  new ConsList<IList<Invader>>(InvL7B, new ConsList<IList<Invader>>(InvL8B,
+                      new ConsList<IList<Invader>>(InvL9B, new MtList<IList<Invader>>())))))))));
+
 
   IList<IList<Invader>> CompleteInvaders2Hit = new ConsList<IList<Invader>>(InvL1Hit,
     new ConsList<IList<Invader>>(InvL2,
@@ -757,26 +832,43 @@ class ExamplesSpaceInvaders {
                 new ConsList<IList<Invader>>(InvL5, new ConsList<IList<Invader>>(InvL6,
                     new ConsList<IList<Invader>>(InvL7Hit, new ConsList<IList<Invader>>(InvL8,
                         new ConsList<IList<Invader>>(InvL9, new MtList<IList<Invader>>())))))))));
+                      
+  IList<Invader> mtInvCol = new MtList<Invader>();
+  IList<IList<Invader>> MtInvColList = new ConsList<IList<Invader>>(mtInvCol,
+      new ConsList<IList<Invader>>(mtInvCol,
+          new ConsList<IList<Invader>>(mtInvCol,
+              new ConsList<IList<Invader>>(mtInvCol,
+                  new ConsList<IList<Invader>>(mtInvCol, new ConsList<IList<Invader>>(mtInvCol,
+                      new ConsList<IList<Invader>>(mtInvCol, new MtList<IList<Invader>>())))))));
+
                         
+  WorldState wsInvEmpty = new WorldState(this.MtInvColList, this.SP1, this.CompleteBulletsHit, 1);
+  WorldState ws1 = new WorldState(this.CompleteInvaders, this.SP1, this.CompleteBulletsHit, 0);
+  WorldState wsSSHit = new WorldState(this.CompleteInvaders, this.SP1,
+      new ConsList<IBullet>(this.ssHit, new MtList<IBullet>()), 0);
+
 
   public boolean testDraw(Tester t) {
     WorldImage board = new RectangleImage(600, 600, "outline", Color.black).movePinhole(-300, 300);
 
     return t.checkExpect(Inv1_1.draw(),
-        new OverlayOffsetImage(board, 100, -500, new RectangleImage(15, 15, OutlineMode.SOLID, Color.MAGENTA)));
+        new OverlayOffsetImage(board, 100, -500, new RectangleImage(15, 15, OutlineMode.SOLID, Color.MAGENTA))) &&
+          t.checkExpect(SP1.draw(), new OverlayOffsetImage(board, 300, -20, 
+          new RectangleImage(30 * 2, 30, OutlineMode.SOLID, Color.BLUE))) &&
+          t.checkExpect(IB1.draw(), new OverlayOffsetImage(board, 150, -550, new RectangleImage(5, 5, OutlineMode.SOLID, Color.ORANGE)));
   }
 
   // TEST FOR FULL GAME
 
-  /*
+  
   boolean testBigBang(Tester t) {
     //WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, 0);
     WorldState world = new WorldState(new MakeListOfColumns().apply(9), SP1, new MtList<IBullet>(), 0);
     int worldWidth = 600;
     int worldHeight = 600;
-    double tickRate = 0.02;
+    double tickRate = 0.01;
     return world.bigBang(worldWidth, worldHeight, tickRate);
-  }*/
+  }
 
   // test the method ChordMatch and orMap
   public boolean testChordMatch(Tester t) {
@@ -784,16 +876,25 @@ class ExamplesSpaceInvaders {
         && t.checkExpect(new ChordMatch(this.CPList2).test(new CartPt(200, -400)), true);
   }
 
-  //test the method MakeInvaders and the function classes MakeListOfColumns, 
-  // MakeInvaderList, MakeInvader, and MakeCartPt
-  /*
-  public boolean testMakeInvaders(Tester t) {
-    return t.checkExpect(new Utils().makeInvaders(9), this.CompleteInvaders2)
-      && t.checkExpect(new Utils().makeInvaders(1),
-        new ConsList<IList<Invader>>(this.InvL9B, new MtList<IList<Invader>>()))
-      && t.checkExpect(new Utils().makeInvaders(0), new MtList<Invader>());
-
-  }*/
+    // test the method MakeInvaders
+    public boolean testMakeInvaders(Tester t) {
+      return t.checkExpect(new Utils().makeInvaders(9), this.CompleteInvaders2)
+          && t.checkExpect(new Utils().makeInvaders(1),
+              new ConsList<IList<Invader>>(this.InvL9B, new MtList<IList<Invader>>()))
+          && t.checkExpect(new Utils().makeInvaders(0), new MtList<Invader>());
+    }
+    
+    //test MakeInvader
+    public boolean testMakeInvader(Tester t) {
+      return t.checkExpect(new MakeInvader().apply(1, 1), this.Inv9_4)
+          && t.checkExpect(new MakeInvader().apply(9, 4), this.Inv1_1);
+    }
+    // test MakeInvaderColumn
+    public boolean testMakeInvaderColumn(Tester t) {
+      return t.checkExpect(new MakeInvaderList().apply(4), this.InvL6B)
+          && t.checkExpect(new MakeInvaderList().apply(3), this.InvL7B);
+    }
+  
 
   // TEST FOR INDIVIDUAL LISTS OF OBJECTS
   /*
@@ -820,15 +921,48 @@ class ExamplesSpaceInvaders {
         && t.checkExpect(this.Inv1_1.ssBulletHit(100, -484), false);
   }
 
-  //test Functions
-  public boolean testApply(Tester t) {
-    //test FilterInvColumn
-    return t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBulletsHit)),
-        this.CompleteInvaders2Hit)
-        && t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBullets)),
-            this.CompleteInvaders);
-        //test others
-  }
+ // test Functions and BiFunctions
+ public boolean testApply(Tester t) {
+  // test FilterInvColumn
+  return t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBulletsHit)),
+      this.CompleteInvaders2Hit)
+      && t.checkExpect(this.CompleteInvaders.map(new FilterInvColumn(this.CompleteBullets)),
+          this.CompleteInvaders)
+      // test FlattenCartPtList
+      && t.checkExpect(new FlattenCartPtList().apply(CPList2, CPList1),
+          (new ConsList<CartPt>(this.IP3_2,
+              new ConsList<CartPt>(this.IP3_3,
+                  new ConsList<CartPt>(this.IP3_1,
+                          new ConsList<CartPt>(this.IP1_1, new ConsList<CartPt>(this.IP1_2,
+                              new ConsList<CartPt>(this.IP1_3, new MtList<CartPt>()))))))))
+      && t.checkExpect(new FlattenCartPtList().apply(new MtList<CartPt>(), new MtList<CartPt>()), new MtList<CartPt>())
+      // test AppendBulletLists
+      && t.checkExpect(new AppendBulletLists().apply(this.IB2, (new ConsList<IBullet>(this.IB1, new MtList<IBullet>()))), 
+          new ConsList<IBullet>(this.IB2, new ConsList<IBullet>(this.IB1, new MtList<IBullet>())))
+      && t.checkExpect(new AppendBulletLists().apply(this.IB2, new MtList<IBullet>()), 
+          new ConsList<IBullet>(this.IB2, new MtList<IBullet>()))
+      
+      // test AndMapHelp
+      && t.checkExpect(new AndMapHelp().apply(true, true), true)
+      && t.checkExpect(new AndMapHelp().apply(false, false), false)
+      && t.checkExpect(new AndMapHelp().apply(true, false), false)
+      && t.checkExpect(new AndMapHelp().apply(false, true), false)
+      // test orMapHelp
+      && t.checkExpect(new OrMapHelp().apply(true, true), true)
+      && t.checkExpect(new OrMapHelp().apply(false, true), true)
+      && t.checkExpect(new OrMapHelp().apply(false, false), false)
+      && t.checkExpect(new OrMapHelp().apply(true, false), true)
+      // test InvaderToImage
+      && t.checkExpect(new InvaderToImage().apply(Inv1_1), this.Inv1_1.draw())
+      // test MayFire
+      && (t.checkOneOf(new MayFire(3).apply(Inv1_1), new CartPt(100, -500), new CartPt(999, 999)))
+      && t.checkExpect(new MayFire(0).apply(Inv1_1), new CartPt(999, 999))
+      // test MakeCartPt
+      && t.checkExpect(new MakeCartPt().apply(1, 1), new CartPt(500, -200))
+      && t.checkExpect(new MakeCartPt().apply(0, 0), new CartPt(550, -100));
+
+}
+
   
   public boolean testTest(Tester t) {
     //test BulInContact
@@ -858,12 +992,13 @@ class ExamplesSpaceInvaders {
             this.CompleteInvaders.orMap((col) -> col.orMap((inv) -> (this.bHit1.checkHit(inv)))),
             true);
   }
-  /*
+  
   public boolean testWinner(Tester t) {
     return t.checkExpect(this.wsInvEmpty.winner(), 1)
         && t.checkExpect(this.wsSSHit.winner(), -1)
         && t.checkExpect(this.ws1.winner(), 0);
-*/
+  }
+
   public boolean testPointsEqual(Tester t) {
     return t.checkExpect(new PointsEqual(IP1_1).test(IP1_1), true) &&
            t.checkExpect(new PointsEqual(IP1_1).test(IP1_2), false) &&
@@ -905,23 +1040,71 @@ class ExamplesSpaceInvaders {
             new ConsList<WorldImage>(this.Inv1_3.draw(), new MtList<WorldImage>())))) &&
           t.checkExpect(new MtList<Invader>(), new MtList<WorldImage>());
   }
-/*
+  /*
   public boolean testCrunchInvaderList(Tester t) {
-    IList<WorldImage> toCrunch = new ConsList<WorldImage>(this.Inv1_1.draw(), new ConsList<WorldImage>(this.Inv1_2.draw(),
-            new ConsList<WorldImage>(this.Inv1_3.draw(), new MtList<WorldImage>())));
+    return t.checkExpect(new CrunchInvaderList().apply(, arg1), expected)
+  }*/
 
-    CrunchWorldImage use = new CrunchWorldImage();
-    return t.checkExpect(new CrunchInvaderList().apply(new InvaderListToImageList().apply(this.InvL1), new WorldScene(1, 1)), 
-    use.apply(this.Inv1_1.draw(), use.apply(this.Inv1_2.draw(), use.apply(this.Inv1_3.draw(), new WorldScene(1, 1)))));
-    }*/
-
-    /*
   public boolean testCrunchWorldImage(Tester t) {
     return t.checkExpect(new CrunchWorldImage().apply(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green),
      new WorldScene(1, 1)), new WorldScene(1,1).placeImageXY(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green), 300, 300)) &&
      t.checkExpect(new CrunchWorldImage().apply(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green),
      new WorldScene(1, 1)), new WorldScene(1,1).placeImageXY(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green), 300, 300));
-  }*/
+  }
+
+   // ------ for easy testing
+   IList<Integer> intList = new ConsList<Integer>(1, new ConsList<Integer>(2,
+   new ConsList<Integer>(3, new ConsList<Integer>(4, new MtList<Integer>()))));
+
+IList<Integer> intListPlus1 = new ConsList<Integer>(2, new ConsList<Integer>(3,
+   new ConsList<Integer>(4, new ConsList<Integer>(5, new MtList<Integer>()))));
+// ------
+
+public boolean testFold(Tester t) {
+ return t.checkExpect(this.intList.fold((i, a) -> i + a, 0), 10)
+     && t.checkExpect(this.intList.fold((i, a) -> i * a, 1), 24)
+     && t.checkExpect(new MtList<Integer>().fold((i, a) -> i * a, 1), 1);
+ 
+}
+
+public boolean testMap(Tester t) {
+ return t.checkExpect(intList.map((i) -> i + 1), this.intListPlus1)
+     && t.checkExpect(new MtList<Integer>().map((i) -> i + 1), new MtList<Integer>());
+}
+
+public boolean testAndMap(Tester t) {
+ return t.checkExpect(intList.andMap((i) -> i == 3), false)
+     && t.checkExpect(new MtList<Integer>().andMap((i) -> i == 1), true)
+     && t.checkExpect(intList.andMap((i) -> i.equals(i)), true);
+}
+
+public boolean testMove(Tester t) {
+ return t.checkExpect(this.SS1.move(), new Spaceship(302, true))
+     && t.checkExpect(this.SwordfishII.move(), new Spaceship(124, false))
+     && t.checkExpect(new Spaceship(570, true).move(), new Spaceship(570, true))
+     && t.checkExpect(this.Inv1_1.move(), this.Inv1_1);
+}
+
+public boolean testGoLeft(Tester t) {
+ return t.checkExpect(this.SS1.goLeft(), new Spaceship(300, false))
+     && t.checkExpect(this.SwordfishII.goLeft(), new Spaceship(126, false))
+     && t.checkExpect(new Spaceship(570, true).goLeft(), new Spaceship(570, false));
+}
+
+public boolean testGoRight(Tester t) {
+ return t.checkExpect(this.SS1.goRight(), new Spaceship(300, true))
+     && t.checkExpect(this.SwordfishII.goRight(), new Spaceship(126, true))
+     && t.checkExpect(new Spaceship(570, true).goRight(), new Spaceship(570, true));
+}
+
+public boolean testUpdatePosn(Tester t) {
+ return t.checkExpect(this.IB1.updatePosn(), new InvaderBullet(new CartPt(150, -549)))
+     && t.checkExpect(this.SB1.updatePosn(), new SpaceshipBullet(new CartPt(450, -101)));
+}
+
+
+
+
 
   
 }
