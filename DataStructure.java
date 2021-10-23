@@ -5,6 +5,7 @@ import tester.*;
 import javalib.worldimages.*;
 import java.awt.Color;
 import javalib.funworld.*;
+import javalib.impworld.WorldScene;
 
 interface IList<T> {
 
@@ -769,8 +770,8 @@ class ExamplesSpaceInvaders {
 
   /*
   boolean testBigBang(Tester t) {
-    WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, 0);
-    //WorldState world = new WorldState(new MakeListOfColumns().apply(9), SP1, new MtList<IBullet>(), 0);
+    //WorldState world = new WorldState(CompleteInvaders, SP1, CompleteBullets, 0);
+    WorldState world = new WorldState(new MakeListOfColumns().apply(9), SP1, new MtList<IBullet>(), 0);
     int worldWidth = 600;
     int worldHeight = 600;
     double tickRate = 0.02;
@@ -894,7 +895,7 @@ class ExamplesSpaceInvaders {
 
   public boolean testLength(Tester t) {
     return t.checkExpect(CompleteInvaders2Hit.length(), 9) &&
-          t.checkExpect(new MtList().length(), 0) &&
+          t.checkExpect(new MtList<Invader>().length(), 0) &&
           t.checkExpect(InvL2.length(), 3); 
   }
 
@@ -904,7 +905,23 @@ class ExamplesSpaceInvaders {
             new ConsList<WorldImage>(this.Inv1_3.draw(), new MtList<WorldImage>())))) &&
           t.checkExpect(new MtList<Invader>(), new MtList<WorldImage>());
   }
+/*
+  public boolean testCrunchInvaderList(Tester t) {
+    IList<WorldImage> toCrunch = new ConsList<WorldImage>(this.Inv1_1.draw(), new ConsList<WorldImage>(this.Inv1_2.draw(),
+            new ConsList<WorldImage>(this.Inv1_3.draw(), new MtList<WorldImage>())));
 
-  
+    CrunchWorldImage use = new CrunchWorldImage();
+    return t.checkExpect(new CrunchInvaderList().apply(new InvaderListToImageList().apply(this.InvL1), new WorldScene(1, 1)), 
+    use.apply(this.Inv1_1.draw(), use.apply(this.Inv1_2.draw(), use.apply(this.Inv1_3.draw(), new WorldScene(1, 1)))));
+    }*/
+
+    /*
+  public boolean testCrunchWorldImage(Tester t) {
+    return t.checkExpect(new CrunchWorldImage().apply(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green),
+     new WorldScene(1, 1)), new WorldScene(1,1).placeImageXY(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green), 300, 300)) &&
+     t.checkExpect(new CrunchWorldImage().apply(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green),
+     new WorldScene(1, 1)), new WorldScene(1,1).placeImageXY(new RectangleImage(1, 1, OutlineMode.SOLID, Color.green), 300, 300));
+  }*/
+
   
 }

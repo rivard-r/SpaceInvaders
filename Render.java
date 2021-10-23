@@ -86,7 +86,7 @@ class WorldState extends World {
     // shotsAvailible is found as max allowed - the sum of all invader bullets in this list of 
     // bullets. Found through tallying invader bullets with sumInvader and summing the total with
     // fold
-    int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0);
+    int shotsAvailible = 10 - this.bullets.map(s->s.sumInvader()).fold((s1,s2)->s1+s2, 0) - 4;
     System.out.println(shotsAvailible);
     // builds a new list of bullets with a random chance of newly fired bullets attached to the old list
     return buildFiredBullets(bullets, invaders.map(new MayFireList(shotsAvailible, this.invaders.length())).fold(new FlattenCartPtList(), new MtList<CartPt>()).filter(s->s.x != 999));
