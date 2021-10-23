@@ -124,7 +124,7 @@ class WorldState extends World {
     int shipY = this.spaceship.loc.y - this.spaceship.size/2;
     return new ConsList<IBullet>(new SpaceshipBullet(new CartPt(shipX, shipY)), this.bullets);
   }
-
+ 
   public WorldScene makeScene() {
     // fold(convert invaders to list of images) + (spaceship image) +
     // fold(convert bullets to images)

@@ -201,7 +201,8 @@ class ChordMatch implements Predicate<CartPt> {
   }
 }
 
-// 
+// applies MayFire to each invader in the list, converting it into a list 
+// of CartPts
 class MayFireList implements Function<IList<Invader>, IList<CartPt>> {
   int shotsAvailible;
   int listLength;
@@ -1101,10 +1102,5 @@ public boolean testUpdatePosn(Tester t) {
  return t.checkExpect(this.IB1.updatePosn(), new InvaderBullet(new CartPt(150, -549)))
      && t.checkExpect(this.SB1.updatePosn(), new SpaceshipBullet(new CartPt(450, -101)));
 }
-
-
-
-
-
   
 }
